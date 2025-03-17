@@ -1,28 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>rnzivn</title>
-<style>
-body {
-  font-family: sans-serif;
-  font-size: 16px;
-}
-
-blockquote {
-  border-left: 1px solid #ccc;
-  padding: 0 1em;
-  margin: 1em 0;
-}
-
-cite {
-  font-style: italic;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Message</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: "Arial", sans-serif;
+            background-color: #ffcccc;
+            background-image: url('https://www.transparenttextures.com/patterns/hearts.png'); /* Adds a hearts pattern */
+            color: white;
+            padding-top: 100px;
+        }
+        .message {
+            font-size: 60px;
+            font-weight: bold;
+            color: #ff0000;
+            text-shadow: 3px 3px 10px rgba(255, 0, 0, 0.7);
+            animation: glow 1.5s infinite alternate;
+        }
+        .byline {
+            font-size: 30px;
+            color: #990000;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        @keyframes glow {
+            0% { text-shadow: 3px 3px 10px rgba(255, 0, 0, 0.7); }
+            100% { text-shadow: 5px 5px 15px rgba(255, 0, 0, 1); }
+        }
+        .heart {
+            font-size: 50px;
+            color: red;
+            animation: heartbeat 1s infinite alternate;
+        }
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2); }
+        }
+    </style>
 </head>
 <body>
-<blockquote>
-  "I love you, Eljairah Carpizo!"
-  <cite>by ivan🫰</cite>
-</blockquote>
+
+    <div class="heart">❤️</div>
+    <div class="message">I love you, Eljairah Carpizo</div>
+    <div class="byline">By Ivan</div>
+    <div class="heart">❤️</div>
+
 </body>
 </html>
