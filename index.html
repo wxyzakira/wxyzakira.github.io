@@ -1,52 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>baby ko to</title>
-    <style>
-        body {
-            text-align: center;
-            font-family: "Arial", sans-serif;
-            background-color: #ffcccc;
-            background-image: url('https://www.transparenttextures.com/patterns/hearts.png'); /* Adds a hearts pattern */
-            color: white;
-            padding-top: 100px;
-        }
-        .message {
-            font-size: 60px;
-            font-weight: bold;
-            color: #ff0000;
-            text-shadow: 3px 3px 10px rgba(255, 0, 0, 0.7);
-            animation: glow 1.5s infinite alternate;
-        }
-        .byline {
-            font-size: 30px;
-            color: #990000;
-            font-style: italic;
-            margin-top: 10px;
-        }
-        @keyframes glow {
-            0% { text-shadow: 3px 3px 10px rgba(255, 0, 0, 0.7); }
-            100% { text-shadow: 5px 5px 15px rgba(255, 0, 0, 1); }
-        }
-        .heart {
-            font-size: 50px;
-            color: red;
-            animation: heartbeat 1s infinite alternate;
-        }
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.2); }
-        }
-    </style>
+    <title>review</title>
 </head>
 <body>
+    <audio id="loopAudio" loop>
+        <source src="your-audio-file.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <button onclick="playAudio()">reviewuts</button>
+    <button onclick="pauseAudio()">jakeonly</button><script>
+    const audio = document.getElementById("loopAudio");
+    
+    function playAudio() {
+        audio.play();
+    }
 
-    <div class="heart">❤️</div>
-    <div class="message">I love you, Eljairah Carpizo</div>
-    <div class="byline">keki</div>
-    <div class="heart">❤️</div>
+    function pauseAudio() {
+        audio.pause();
+    }
+</script>
 
 </body>
 </html>
