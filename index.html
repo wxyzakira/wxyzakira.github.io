@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Test Bank App</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        #app-container::-webkit-scrollbar { width: 8px; }
+        #app-container::-webkit-scrollbar-track { background: #e5e7eb; }
+        #app-container::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 4px; }
+        #app-container::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            padding-bottom: 1rem;
+        }
+    </style>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, onSnapshot, collection, query, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- HARDCODED FIREBASE CONFIGURATION (Provided by User) ---
+        // These values connect the application directly to the 'testbank-5f9eb' project.
+        const appId = "testbank-5f9eb"; // Manually set Project ID
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNAyPLF4TkGNxUZQpZ43vHgwVauChlBMU",
+            authDomain: "testbank-5f9eb.firebaseapp.com",
+            projectId: "testbank-5f9eb",
+            storageBucket: "testbank-5f9eb.firebasestorage.app",
+            messagingSenderId: "898948403916",
+            appId: "1:898948403916:web:a15cc091543c59bc386869"
+        };
+        
+        // This token is set to null as it's only used for custom authentication in a specific environment.
+        const initialAuthToken = null; 
+        
+        // Expose Firebase objects globally for the application script
+        window.firebaseApp = initializeApp(firebaseConfig);
+        
+        window.db = getFirestore(window.firebaseApp);
+        window.auth = getAuth(window.firebaseApp);
+        
+        // Enable debug logging for Firebase
+        setLogLevel('debug'); 
+
+        window.userId = null;
+        window.isAuthReady = false;
+
+        // Function to handle initial authentication
+        async function authenticateUser() {
+            try {
+                // Set persistence to session to avoid constant re-auth
+                await setPersistence(window.auth, browserSessionPersistence);
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(window.auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(window.auth);
+                }
+                
+                // Listener to capture UID after successful sign-in
+                onAuthStateChanged(window.auth, (user) => {
+                    if (user) {
+                        window.userId = user.uid;
+                        window.isAuthReady = true;
+                    } else {
+                        window.isAuthReady = true;
+                    }
+                    // Re-render the name input screen to enable the button/update status
+                    if(document.getElementById('name-input')) {
+                        window.renderNameInput();
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase Auth Error:", error);
+                window.isAuthReady = true; // Still allow app to proceed even if auth failed
+                if(document.getElementById('name-input')) {
+                    window.renderNameInput();
+                }
+            }
+        }
+
+        authenticateUser();
+        
+        // Expose necessary Firestore functions
+        window.fs = { addDoc, collection, query, onSnapshot, serverTimestamp };
+        window.getUserId = () => window.userId || crypto.randomUUID();
+        window.getAppId = () => appId;
+    </script>
+
+
+</head>
+<body class="min-h-screen flex items-start justify-center p-4 sm:p-8">
+
+    <!-- Main Application Container -->
+    <div id="app-container" class="w-full max-w-2xl bg-white rounded-xl p-6 sm:p-8 card mt-8">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-gray-800">Development Test Bank</h1>
+            <div id="header-info" class="header-section">
+                <p id="user-info" class="text-sm text-gray-500 font-medium"></p>
+                <p id="category-title" class="text-xl font-semibold text-indigo-600 mt-2"></p>
+            </div>
+        </header>
+
+        <!-- Content will be rendered here (Name Input, Menu, Quiz, Results) -->
+        <div id="content">
+            <!-- Initial content will be the name input screen -->
+            <div class="text-center p-8 text-gray-500">Loading Application...</div>
+        </div>
+
+    </div>
+
+    <!-- Message Box / Modal Structure (Replaces alert()) -->
+    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm transform transition-all">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4" id="modal-title">Notification</h3>
+            <p id="modal-message" class="text-gray-700 mb-6"></p>
+            <!-- Custom content area for admin login -->
+            <div id="modal-custom-content"></div>
+            <button id="modal-default-button" onclick="hideMessageBox()" class="w-full py-2 bg-indigo-500 text-white font-semibold rounded-lg hover:bg-indigo-600 transition shadow-md">OK, Got it!</button>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // --- 1. QUIZ DATA ---
+        const quizData = {
+            "Garments": {
+                name: "Garments",
+                questions: [
+                    { q: "What is the primary tool used for taking body measurements?", a: "Tape measure", b: "Ruler", c: "Chalk", d: "Pin cushion", ans: 'a' },
+                    { q: "Which sewing machine part moves the fabric forward?", a: "Feed dog", b: "Needle bar", c: "Bobbin case", d: "Tension disc", ans: 'a' },
+                    { q: "The process of joining two fabric pieces using stitches is called:", a: "Darning", b: "Seaming", c: "Tacking", d: "Pressing", ans: 'b' },
+                    { q: "What is used to temporarily hold fabric pieces together?", a: "Straight stitch", b: "Pins", c: "Seam ripper", d: "Bias tape", ans: 'b' },
+                    { q: "Which pattern marking indicates the direction of fabric grain?", a: "Notches", b: "Grainline arrow", c: "Button symbol", d: "Cutting line", ans: 'b' }
+                ]
+            },
+            "Computer Hardware Servicing": {
+                name: "Computer Hardware Servicing (CHS)",
+                questions: [
+                    { q: "What is the brain of the computer?", a: "RAM", b: "Hard drive", c: "CPU", d: "Motherboard", ans: 'c' },
+                    { q: "What tool is best for removing small screws?", a: "Phillips screwdriver", b: "Pliers", c: "Flat screwdriver", d: "Crimper", ans: 'a' },
+                    { q: "Thermal paste is used to:", a: "Reduce heat between CPU and heatsink", b: "Store data", c: "Clean contacts", d: "Cool GPU directly", ans: 'a' },
+                    { q: "Which device converts AC to DC?", a: "Motherboard", b: "Power Supply Unit", c: "RAM", d: "SSD", ans: 'b' },
+                    { q: "What is the standard port for monitors?", a: "VGA/HDMI", b: "RJ45", c: "PS/2", d: "Audio jack", ans: 'a' }
+                ]
+            },
+            "Electronics / Electrical Technology": {
+                name: "Electronics / Electrical Technology (Eltech)",
+                questions: [
+                    { q: "What unit measures electrical current?", a: "Volt", b: "Watt", c: "Ampere", d: "Ohm", ans: 'c' },
+                    { q: "A resistor is used to:", a: "Increase voltage", b: "Limit current", c: "Store charge", d: "Open a circuit", ans: 'b' },
+                    { q: "Which tool measures voltage, current, and resistance?", a: "Soldering iron", b: "Multimeter", c: "Oscilloscope", d: "Clamp meter", ans: 'b' },
+                    { q: "What color typically indicates the ground wire?", a: "Red", b: "Black", c: "Green", d: "Blue", ans: 'c' },
+                    { q: "Which component stores electrical energy?", a: "Diode", b: "Transistor", c: "Capacitor", d: "Fuse", ans: 'c' }
+                ]
+            }
+        };
+
+        // --- 2. APPLICATION STATE ---
+        let currentCategory = null;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizRunning = false;
+        let userName = ''; 
+        
+        // --- ADMIN LOGIN CONFIGURATION ---
+        // The admin must enter this secret key to unlock the admin view.
+        const ADMIN_SECRET_KEY = "TestBankAdmin2025"; 
+        let isAdminLoggedIn = false; // New state to track admin session
+
+        // --- DOM Elements ---
+        const contentDiv = document.getElementById('content');
+        const categoryTitleElement = document.getElementById('category-title');
+        const userInfoElement = document.getElementById('user-info');
+        const modal = document.getElementById('message-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalDefaultButton = document.getElementById('modal-default-button');
+        const modalCustomContent = document.getElementById('modal-custom-content');
+
+        // --- 3. CORE LOGIC FUNCTIONS ---
+
+        // Function to display custom message box (replaces alert())
+        function showMessageBox(message, title = "Notification") {
+            modalTitle.textContent = title;
+            modalMessage.innerHTML = message;
+            modalCustomContent.innerHTML = ''; // Clear custom content
+            modalDefaultButton.style.display = 'block';
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // Function to hide custom message box
+        window.hideMessageBox = function() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            modalCustomContent.innerHTML = ''; // Ensure input is removed on close
+        }
+
+        // Helper to map option letter to text
+        function getOptionText(question, option) {
+            switch (option) {
+                case 'a': return question.a;
+                case 'b': return question.b;
+                case 'c': return question.c;
+                case 'd': return question.d;
+                default: return '';
+            }
+        }
+
+        // Handles user selecting an answer
+        function handleAnswerClick(userAns) {
+            if (!quizRunning) return; 
+
+            const currentQ = currentCategory.questions[currentQuestionIndex];
+            const isCorrect = userAns === currentQ.ans;
+
+            // Highlight the correct/incorrect answers on the UI
+            const optionElements = contentDiv.querySelectorAll('.quiz-option');
+            optionElements.forEach(el => {
+                const optionLetter = el.getAttribute('data-option');
+                if (optionLetter === currentQ.ans) {
+                    el.classList.remove('bg-indigo-100', 'hover:bg-indigo-200');
+                    el.classList.add('bg-green-200', 'border-green-500'); // Correct Answer Highlight
+                } else if (optionLetter === userAns) {
+                    el.classList.remove('bg-indigo-100', 'hover:bg-indigo-200');
+                    el.classList.add('bg-red-200', 'border-red-500'); // User's Wrong Answer Highlight
+                }
+                el.disabled = true; // Disable all buttons
+            });
+
+            if (isCorrect) {
+                score++;
+            }
+
+            quizRunning = false; // Pause interaction until next question
+
+            // Move to the next question or results after a short delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < currentCategory.questions.length) {
+                    renderQuiz();
+                } else {
+                    renderResults();
+                }
+                quizRunning = true; // Resume interaction for next question screen
+            }, 1000); // 1 second delay to let user see the feedback
+        }
+
+        // Resets the quiz state for a new attempt
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizRunning = true;
+        }
+
+        // Firestore function to save results in both private and public paths
+        async function saveResult(categoryName, score, total) {
+            if (!window.isAuthReady) {
+                console.error("Attempted to save result before authentication was ready.");
+                return;
+            }
+
+            const resultData = {
+                userId: window.getUserId(),
+                user: userName,
+                category: categoryName,
+                score: score,
+                total: total,
+                percentage: (score / total) * 100,
+                timestamp: fs.serverTimestamp()
+            };
+
+            // 1. Save to Private Location (for user's history)
+            const privatePath = `artifacts/${window.getAppId()}/users/${window.getUserId()}/quiz_results`;
+            try {
+                await fs.addDoc(fs.collection(window.db, privatePath), resultData);
+                console.log("Private quiz result saved.");
+            } catch (e) {
+                console.error("Error saving private document: ", e);
+            }
+            
+            // 2. Save to Public Location (for admin/creator access)
+            const publicPath = `artifacts/${window.getAppId()}/public/data/all_quiz_results`;
+            try {
+                await fs.addDoc(fs.collection(window.db, publicPath), resultData);
+                console.log("Public quiz result saved.");
+            } catch (e) {
+                console.error("Error saving public document: ", e);
+                showMessageBox("Error saving quiz results to the database. Check the console for details.");
+            }
+        }
+
+        // --- 4. ADMIN LOGIN & LOGOUT ---
+
+        window.showAdminLoginPrompt = function() {
+            modalTitle.textContent = "Admin Login Required";
+            modalMessage.innerHTML = `<p class="text-sm text-gray-500">Enter the secret key to access the administration panel.</p>`;
+            modalDefaultButton.style.display = 'none'; // Hide default OK button
+            
+            modalCustomContent.innerHTML = `
+                <input 
+                    id="admin-key-input"
+                    type="password" 
+                    placeholder="Secret Admin Key" 
+                    class="w-full p-3 border-2 border-yellow-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 mb-4"
+                    onkeydown="if(event.key === 'Enter') attemptAdminLogin(document.getElementById('admin-key-input').value)"
+                />
+                <button 
+                    class="w-full py-2 bg-yellow-600 text-white font-semibold rounded-lg hover:bg-yellow-700 transition shadow-md"
+                    onclick="attemptAdminLogin(document.getElementById('admin-key-input').value)"
+                >
+                    Login
+                </button>
+            `;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('admin-key-input').focus();
+        };
+
+        window.attemptAdminLogin = function(key) {
+            if (key === ADMIN_SECRET_KEY) {
+                isAdminLoggedIn = true;
+                hideMessageBox();
+                showMessageBox(`Welcome back, Creator! Admin view is now enabled.`, "Admin Access Granted");
+                renderMenu(); // Refresh menu to show admin button
+            } else {
+                showMessageBox(`Incorrect secret key. Access denied.`, "Login Failed");
+            }
+        };
+
+        window.adminLogout = function() {
+            isAdminLoggedIn = false;
+            showMessageBox(`Admin access has been revoked.`, "Admin Logged Out");
+            renderMenu(); // Refresh menu
+        };
+
+        // --- 5. RENDER FUNCTIONS ---
+
+        function renderNameInput() {
+            window.contentRendered = true; // Flag to indicate content has been rendered
+            categoryTitleElement.textContent = "Welcome";
+            userInfoElement.innerHTML = '';
+
+            let html = `
+                <p class="text-lg text-gray-600 mb-6 text-center">Please enter your name to start the Test Bank application.</p>
+                ${!window.isAuthReady ? '<p class="text-yellow-600 text-center mb-4">Connecting to database...</p>' : ''}
+                <div class="space-y-4">
+                    <input 
+                        id="name-input"
+                        type="text" 
+                        placeholder="Your Name" 
+                        value="${userName}"
+                        class="w-full p-3 border-2 border-indigo-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                        onkeydown="if(event.key === 'Enter') validateName()"
+                    />
+                    <button 
+                        class="w-full py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 transition duration-150 font-semibold text-lg shadow-md disabled:bg-indigo-300"
+                        onclick="validateName()"
+                        ${!window.isAuthReady ? 'disabled' : ''}
+                    >
+                        Continue
+                    </button>
+                </div>
+            `;
+            contentDiv.innerHTML = html;
+        }
+
+        window.validateName = function() {
+            if (!window.isAuthReady) return;
+
+            const nameInput = document.getElementById('name-input');
+            const name = nameInput.value.trim();
+
+            if (name.length > 0) {
+                userName = name;
+                renderMenu();
+            } else {
+                showMessageBox("Please enter a valid name to continue.");
+            }
+        };
+
+
+        window.renderMenu = function() {
+            if (!userName) return renderNameInput();
+
+            categoryTitleElement.textContent = `Hello, ${userName}!`;
+            userInfoElement.innerHTML = `User ID: <span class="font-mono text-xs">${window.getUserId()}</span>`;
+            
+            const categoryKeys = Object.keys(quizData);
+            let html = `
+                <p class="text-lg text-gray-600 mb-6 text-center">Select a category to begin your quiz.</p>
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+            `;
+
+            categoryKeys.forEach(key => {
+                const category = quizData[key];
+                html += `
+                    <button 
+                        class="w-full text-left p-4 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 transition duration-150 font-semibold text-lg shadow-md"
+                        onclick="startQuiz('${key}')"
+                    >
+                        ${category.name}
+                    </button>
+                `;
+            });
+
+            html += `
+                </div>
+                <div class="mt-8 grid grid-cols-2 gap-4">
+                    <button 
+                        onclick="renderHistory('private')" 
+                        class="py-2 bg-green-500 text-white rounded-lg hover:bg-green-700 transition duration-150 font-semibold shadow-md"
+                    >
+                        My History
+                    </button>
+                    <button 
+                        onclick="showMessageBox('Thank you for using the Development Test Bank App, ${userName}.')" 
+                        class="py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition duration-150 font-semibold"
+                    >
+                        Exit Program
+                    </button>
+                    
+                    ${isAdminLoggedIn ? `
+                        <button 
+                            onclick="renderHistory('admin')" 
+                            class="py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition duration-150 font-semibold shadow-md mt-4"
+                        >
+                            Admin View (All Results)
+                        </button>
+                        <button 
+                            onclick="adminLogout()" 
+                            class="py-2 bg-red-300 text-red-800 rounded-lg hover:bg-red-400 transition duration-150 font-semibold shadow-md mt-4"
+                        >
+                            Logout Admin
+                        </button>
+                    ` : `
+                        <button 
+                            onclick="showAdminLoginPrompt()" 
+                            class="col-span-2 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-150 font-semibold shadow-md mt-4"
+                        >
+                            Admin Login
+                        </button>
+                    `}
+                </div>
+            `;
+            contentDiv.innerHTML = html;
+        }
+
+        function renderQuiz() {
+            if (!currentCategory || currentQuestionIndex >= currentCategory.questions.length) {
+                return renderMenu(); // Safety check
+            }
+
+            const currentQ = currentCategory.questions[currentQuestionIndex];
+            const qNum = currentQuestionIndex + 1;
+            const totalQ = currentCategory.questions.length;
+
+            categoryTitleElement.textContent = `${currentCategory.name} | ${userName}`;
+
+            let html = `
+                <div class="mb-6">
+                    <p class="text-sm text-indigo-600 font-medium mb-1">Question ${qNum} of ${totalQ}</p>
+                    <h2 class="text-2xl font-bold text-gray-800">${currentQ.q}</h2>
+                </div>
+                <div class="space-y-3">
+            `;
+            
+            const options = ['a', 'b', 'c', 'd'];
+
+            options.forEach(opt => {
+                const optionText = getOptionText(currentQ, opt);
+                html += `
+                    <button 
+                        class="quiz-option w-full text-left p-4 bg-indigo-100 text-gray-800 rounded-lg border-2 border-indigo-200 hover:bg-indigo-200 transition duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-100"
+                        data-option="${opt}"
+                        onclick="handleAnswerClick('${opt}')"
+                        >
+                        <span class="font-bold uppercase mr-2">${opt})</span> ${optionText}
+                    </button>
+                `;
+            });
+
+            html += `
+                </div>
+                <div class="mt-6 text-right text-gray-500 font-medium">
+                    Current Score: ${score}
+                </div>
+            `;
+
+            contentDiv.innerHTML = html;
+            quizRunning = true;
+        }
+
+        function renderResults() {
+            const totalQ = currentCategory.questions.length;
+            const percentage = (score / totalQ * 100).toFixed(0);
+
+            // Save the result to Firestore (both private and public paths)
+            saveResult(currentCategory.name, score, totalQ);
+
+            categoryTitleElement.textContent = `${currentCategory.name} - Results`;
+
+            let html = `
+                <div class="text-center p-6 bg-green-50 rounded-lg border-2 border-green-300 mb-8">
+                    <p class="text-3xl font-extrabold text-gray-800 mb-2">${userName}, Quiz Complete!</p>
+                    <p class="text-4xl font-black text-green-700">You scored ${score} / ${totalQ}</p>
+                    <p class="text-lg text-gray-600 mt-2">${percentage}% accuracy</p>
+                    <p class="text-sm text-gray-500 mt-2">(Result saved to history for you and the creator)</p>
+                </div>
+
+                <p class="text-xl font-semibold text-gray-700 mb-4">What would you like to do next?</p>
+                <div class="space-y-4">
+                    <button 
+                        class="w-full py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 transition duration-150 font-semibold text-lg shadow-md"
+                        onclick="startQuiz(currentCategory.name)"
+                    >
+                        Try this category again (A)
+                    </button>
+                    <button 
+                        class="w-full py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-150 font-semibold text-lg shadow-md"
+                        onclick="renderMenu()"
+                    >
+                        Choose another category (B)
+                    </button>
+                    <button 
+                        class="w-full py-3 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition duration-150 font-semibold text-lg shadow-md"
+                        onclick="showMessageBox('Thank you for using the Development Test Bank App, ${userName}.')"
+                    >
+                        Exit the program (C)
+                    </button>
+                </div>
+            `;
+
+            contentDiv.innerHTML = html;
+            quizRunning = false;
+        }
+        
+        // Updated to handle both private and admin views
+        window.renderHistory = function(viewType) {
+            if (!window.isAuthReady) {
+                showMessageBox("Database connection is not ready. Please try again.");
+                return;
+            }
+
+            let historyTitle = viewType === 'admin' ? `Admin View (All Users)` : `My Quiz History for ${userName}`;
+            let backButtonText = viewType === 'admin' ? `Back to Menu (Admin)` : `Back to Menu`;
+            let loadingText = viewType === 'admin' ? `Loading ALL quiz results...` : `Loading YOUR quiz history...`;
+            
+            categoryTitleElement.textContent = historyTitle;
+            contentDiv.innerHTML = `
+                <button onclick="renderMenu()" class="text-indigo-600 hover:text-indigo-800 mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H16a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    ${backButtonText}
+                </button>
+                <div id="history-loading" class="text-center p-8 text-gray-500">${loadingText}</div>
+                <div id="history-list" class="overflow-x-auto"></div>
+            `;
+            
+            fetchHistory(viewType);
+        }
+
+        function fetchHistory(viewType) {
+            // Determine the path based on the view type
+            const path = viewType === 'admin' 
+                ? `artifacts/${window.getAppId()}/public/data/all_quiz_results` 
+                : `artifacts/${window.getAppId()}/users/${window.getUserId()}/quiz_results`;
+
+            const resultsCollection = fs.collection(window.db, path);
+            const historyList = document.getElementById('history-list');
+            const historyLoading = document.getElementById('history-loading');
+            
+            // Define table headers based on view type
+            const baseHeaders = `
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Percentage</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            `;
+            const adminUserHeader = `<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>`;
+            const tableHeaders = viewType === 'admin' ? adminUserHeader + baseHeaders : baseHeaders;
+
+
+            const unsubscribe = fs.onSnapshot(resultsCollection, (snapshot) => {
+                const results = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const timestamp = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleString() : 'N/A';
+                    results.push({ id: doc.id, ...data, timestampFormatted: timestamp });
+                });
+
+                results.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+                
+                if (historyLoading) historyLoading.remove();
+                
+                if (results.length === 0) {
+                    historyList.innerHTML = `<div class="text-center p-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg mt-4">No quiz results found yet. Start a quiz!</div>`;
+                    return;
+                }
+
+                let tableHtml = `
+                    <table class="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden border">
+                        <thead class="bg-gray-50">
+                            <tr>${tableHeaders}</tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                `;
+
+                results.forEach(res => {
+                    const textColor = res.percentage >= 80 ? 'text-green-600' : res.percentage >= 60 ? 'text-yellow-600' : 'text-red-600';
+                    const adminUserCell = viewType === 'admin' ? `<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">${res.user || 'Unknown'}</td>` : '';
+                    
+                    tableHtml += `
+                        <tr class="hover:bg-gray-50">
+                            ${adminUserCell}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${res.category}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${res.score}/${res.total}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${textColor} hidden sm:table-cell">${res.percentage.toFixed(0)}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${res.timestampFormatted}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHtml += `
+                        </tbody>
+                    </table>
+                `;
+                historyList.innerHTML = tableHtml;
+            }, (error) => {
+                console.error("Error fetching history:", error);
+                if (historyLoading) historyLoading.remove();
+                historyList.innerHTML = `<div class="text-center p-8 text-red-600 border-2 border-dashed border-red-300 rounded-lg mt-4">Failed to load history. Database error.</div>`;
+            });
+
+            // Note: In a production app, you would handle the unsubscribe on component unmount.
+        }
+
+        // --- 6. INITIALIZATION & PUBLIC ACCESSORS ---
+
+        window.startQuiz = (categoryName) => {
+            if (quizData[categoryName]) {
+                currentCategory = quizData[categoryName];
+                resetQuiz();
+                renderQuiz();
+            } else {
+                console.error("Invalid category name:", categoryName);
+                window.renderMenu();
+            }
+        };
+
+        window.handleAnswerClick = handleAnswerClick;
+
+        // Start the application by rendering the name input screen immediately
+        document.addEventListener('DOMContentLoaded', () => {
+             // New variable to track if content has been rendered
+             window.contentRendered = false; 
+             
+             // Render the name input screen immediately upon DOM load.
+             renderNameInput();
+
+             // The authentication process will continue in the background and re-render the input
+             // screen (to enable the button) once it's complete.
+        });
+    </script>
+</body>
+</html>
