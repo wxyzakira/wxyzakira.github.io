@@ -8,9 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #3b82f6; /* Blue 500 */
-            --secondary-color: #10b981; /* Emerald 500 */
-            --danger-color: #ef4444; /* Red 500 */
+            --primary-color: #3b82f6;
+            --secondary-color: #10b981;
+            --danger-color: #ef4444;
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -20,6 +20,10 @@
             align-items: flex-start;
             min-height: 100vh;
             padding: 1rem;
+            transition: background-color 0.3s;
+        }
+        .dark body {
+            background-color: #1f2937;
         }
         .app-container {
             max-width: 600px;
@@ -29,6 +33,11 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-top: 1rem;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .dark .app-container {
+            background-color: #374151;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
         .button-primary {
             background-color: var(--primary-color);
@@ -60,7 +69,6 @@
         .button-danger:hover {
             background-color: #dc2626;
         }
-        /* Custom radio button styling */
         .custom-radio input[type="radio"] {
             position: absolute;
             opacity: 0;
@@ -77,14 +85,21 @@
             transition: all 0.2s;
             font-weight: 500;
         }
+        .dark .custom-radio label {
+            border: 2px solid #4b5563;
+        }
         .custom-radio input[type="radio"]:checked + label {
             border-color: var(--primary-color);
-            background-color: #eff6ff; /* Blue 50 */
-            box-shadow: 0 0 0 2px #bfdbfe; /* Blue 200 ring */
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 2px #bfdbfe;
+        }
+        .dark .custom-radio input[type="radio"]:checked + label {
+            background-color: #1e3a8a;
+            color: white;
         }
     </style>
 </head>
-<body>
+<body id="body-main">
 
 <div id="app" class="app-container">
     <div id="loading-screen" class="text-center p-8">
@@ -92,32 +107,26 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p class="mt-4 text-gray-600">Initializing database and authentication...</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-300">Initializing database and authentication...</p>
     </div>
 
-    <!-- The UI will be rendered dynamically here -->
 </div>
 
 <script type="module">
-    // --- FIREBASE IMPORTS ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, runTransaction, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Set Firebase Log Level to debug for easy troubleshooting
     setLogLevel('debug');
 
-    // --- GLOBAL VARIABLES & INITIALIZATION ---
     let app, db, auth;
     let userId = null;
     let userName = null;
     let userRecords = null;
     let isAuthReady = false;
 
-    // Canvas environment variables
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     
-    // Default config (user provided) used if the Canvas injected config is somehow unavailable.
     const defaultFirebaseConfig = {
         apiKey: "AIzaSyATrF3HU85bkDfhcv2P8NFXh-30UWxD6yU",
         authDomain: "kkkk-d3f69.firebaseapp.com",
@@ -127,13 +136,11 @@
         appId: "1:105909143390:web:c62140b87c3072b1c031cf"
     };
 
-    // We prioritize the Canvas-provided config which is required for authentication to work correctly.
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
 
     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    // App state
-    let currentView = 'auth'; // 'auth', 'dashboard', 'quiz', 'results'
+    let currentView = 'auth';
     let currentQuizCategory = null;
     let currentQuestionIndex = 0;
     let currentQuizAnswers = {};
@@ -169,8 +176,6 @@
         ]
     };
 
-    // --- FIREBASE INITIALIZATION & AUTHENTICATION ---
-
     async function initializeFirebase() {
         if (!firebaseConfig) {
             console.error("Firebase configuration is missing.");
@@ -183,7 +188,6 @@
             db = getFirestore(app);
             auth = getAuth(app);
 
-            // 1. Attempt Sign In
             if (initialAuthToken) {
                 await signInWithCustomToken(auth, initialAuthToken);
                 console.log("Signed in with custom token.");
@@ -192,19 +196,15 @@
                 console.log("Signed in anonymously.");
             }
 
-            // 2. Set up Auth State Listener
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
-                    // Check if the user is already registered (has a username in Firestore or display name)
                     if (user.displayName) {
                         userName = user.displayName;
                         isAuthReady = true;
-                        // Start listening to records immediately if we have a display name
                         setupRecordListener();
                         setView('dashboard');
                     } else {
-                        // User is authenticated but needs to register a username
                         isAuthReady = true;
                         setView('auth');
                     }
@@ -223,10 +223,7 @@
         }
     }
 
-    // --- FIREBASE FIRESTORE FUNCTIONS ---
-
     const getRecordsRef = (uid) => {
-        // Path: /artifacts/{appId}/users/{userId}/quiz_records/data
         const recordsCollectionPath = `/artifacts/${appId}/users/${uid}/quiz_records`;
         return doc(db, recordsCollectionPath, 'data');
     };
@@ -242,11 +239,9 @@
                 userName = userRecords.username || auth.currentUser.displayName || 'Guest';
                 console.log("User records loaded:", userRecords);
             } else {
-                // If records don't exist, they will be created upon first registration or quiz completion
                 userRecords = null;
                 console.log("No user records found. Dashboard will prompt registration/login.");
             }
-            // Re-render the current view to reflect the new state (especially the dashboard)
             renderApp();
         }, (error) => {
             console.error("Error setting up Firestore listener:", error);
@@ -260,17 +255,12 @@
             return;
         }
 
-        // 1. Check if username is already taken (This requires a public collection check, which I will simplify by trusting the user's input and forcing them to update if the name is invalid later, as enforcing uniqueness across all users is complex under these security rules).
-        // Since we are using private data path, we will just update the user's own document.
-
         const recordsRef = getRecordsRef(userId);
 
         try {
-            // Update Auth display name
             await updateProfile(auth.currentUser, { displayName: newUsername });
             userName = newUsername;
 
-            // Initialize or update the private record document with the username and initial scores
             const initialData = {
                 username: newUsername,
                 scores: {
@@ -285,9 +275,8 @@
             await setDoc(recordsRef, initialData, { merge: true });
             userRecords = initialData;
 
-            // Since we set the display name, the onAuthStateChanged listener will handle the transition to dashboard.
             renderMessage(`Welcome, ${newUsername}! Registration successful.`, 'secondary');
-            setupRecordListener(); // Ensure listener is attached
+            setupRecordListener();
             setView('dashboard');
 
         } catch (error) {
@@ -327,7 +316,7 @@
                 });
 
                 transaction.set(recordsRef, data);
-                userRecords = data; // Update local state immediately for fast UI feedback
+                userRecords = data;
             });
 
             renderMessage(`Score saved successfully! High score for ${category} updated.`, 'secondary');
@@ -337,8 +326,6 @@
         }
     }
 
-    // --- UI/VIEW MANAGEMENT ---
-
     function setView(viewName) {
         currentView = viewName;
         renderApp();
@@ -347,19 +334,17 @@
     function renderMessage(message, type = 'primary') {
         const appDiv = document.getElementById('app');
         const messageId = `msg-${Date.now()}`;
-        const colorClass = type === 'danger' ? 'bg-red-100 text-red-800' :
-                           type === 'secondary' ? 'bg-green-100 text-green-800' :
-                           'bg-blue-100 text-blue-800';
+        const colorClass = type === 'danger' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
+                             type === 'secondary' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
+                             'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
 
         const messageDiv = document.createElement('div');
         messageDiv.id = messageId;
         messageDiv.className = `p-3 mb-4 rounded-xl text-sm font-medium ${colorClass} transition-opacity duration-500 ease-out`;
         messageDiv.innerHTML = message;
 
-        // Find the first child of the app container to insert the message before it
         appDiv.insertBefore(messageDiv, appDiv.firstChild);
 
-        // Auto-remove after 5 seconds
         setTimeout(() => {
             const el = document.getElementById(messageId);
             if (el) {
@@ -371,7 +356,6 @@
 
     function renderApp() {
         const appDiv = document.getElementById('app');
-        // Clear old content, but keep messages
         const contentDiv = document.createElement('div');
         contentDiv.id = 'content';
         contentDiv.className = 'pt-2';
@@ -385,10 +369,9 @@
         } else if (currentView === 'results') {
             contentDiv.innerHTML = renderResultsScreen();
         } else {
-            contentDiv.innerHTML = '<h2 class="text-xl text-center text-gray-700">Application Error</h2>';
+            contentDiv.innerHTML = '<h2 class="text-xl text-center text-gray-700 dark:text-gray-300">Application Error</h2>';
         }
 
-        // Replace content, keeping existing message blocks intact
         const existingContent = document.getElementById('content');
         if (existingContent) {
             appDiv.replaceChild(contentDiv, existingContent);
@@ -396,10 +379,9 @@
             appDiv.appendChild(contentDiv);
         }
 
-        // Attach event listeners after content is rendered
         if (currentView === 'auth') {
             document.getElementById('register-form')?.addEventListener('submit', handleRegistration);
-            document.getElementById('login-form')?.addEventListener('submit', handleLogin);
+            document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
         } else if (currentView === 'dashboard') {
             document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
             document.querySelectorAll('.quiz-start-btn').forEach(button => {
@@ -408,36 +390,81 @@
         } else if (currentView === 'quiz') {
             document.getElementById('quiz-form')?.addEventListener('submit', handleQuizSubmit);
         }
+        
+        document.querySelectorAll('.mode-toggle').forEach(btn => {
+            btn.removeEventListener('click', toggleDarkMode);
+            btn.addEventListener('click', toggleDarkMode);
+        });
+
+        checkDarkModePreference();
+    }
+
+    // --- DARK MODE LOGIC ---
+    function checkDarkModePreference() {
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.getElementById('body-main').classList.add('dark');
+        } else {
+            document.getElementById('body-main').classList.remove('dark');
+        }
+    }
+
+    function toggleDarkMode() {
+        const body = document.getElementById('body-main');
+        if (body.classList.contains('dark')) {
+            body.classList.remove('dark');
+            localStorage.theme = 'light';
+        } else {
+            body.classList.add('dark');
+            localStorage.theme = 'dark';
+        }
+        // Re-render to update the sun/moon icon based on the new state
+        renderApp();
+    }
+    window.toggleDarkMode = toggleDarkMode;
+
+    function getModeToggleHTML() {
+        const isDark = document.getElementById('body-main')?.classList.contains('dark');
+        const icon = isDark ? `
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        ` : `
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        `;
+        return `
+            <button class="mode-toggle p-2 rounded-full text-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition duration-150 ease-in-out" aria-label="Toggle Dark Mode">
+                ${icon}
+            </button>
+        `;
     }
 
     // --- SCREEN RENDERING FUNCTIONS ---
 
     function renderAuthScreen() {
         if (userName) {
-            // This case occurs if auth is successful but we land back on auth screen after logout
             return `
-                <div class="text-center p-4">
-                    <h1 class="text-3xl font-bold text-gray-800 mb-6">Welcome Back!</h1>
-                    <p class="text-lg text-gray-600 mb-8">You are currently signed in as <strong>${userName}</strong>.</p>
+                <div class="flex justify-end">${getModeToggleHTML()}</div>
+                <div class="text-center p-4 dark:text-gray-100">
+                    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">Welcome Back!</h1>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">You are currently signed in as <strong>${userName}</strong>.</p>
                     <button id="logout-btn" class="button-danger w-full mt-4">Log Out / Switch User</button>
-                    <button onclick="window.location.reload()" class="button-primary w-full mt-2">Go to Dashboard</button>
+                    <button onclick="window.handleGoToDashboard()" class="button-primary w-full mt-2">Go to Dashboard</button>
                 </div>
             `;
         }
 
         return `
-            <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Vocational Quiz Portal</h1>
-            <p class="text-sm text-gray-500 mb-4 text-center">Your private records are stored securely using your unique ID: <code class="bg-gray-100 p-1 rounded">${userId || '...'}</code></p>
+            <div class="flex justify-end">${getModeToggleHTML()}</div>
+            <h1 class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 mb-6 text-center">Vocational Quiz Portal</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">Your private records are stored securely using your unique ID: <code class="bg-gray-100 dark:bg-gray-700 p-1 rounded">${userId || '...'}</code></p>
 
-            <div class="bg-gray-50 p-6 rounded-2xl shadow-inner">
-                <h2 class="text-xl font-bold text-gray-700 mb-4">Register / Set Username</h2>
+            <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-2xl shadow-inner">
+                <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Register / Set Username</h2>
                 <form id="register-form">
                     <div class="mb-4">
-                        <label for="reg-username" class="block text-sm font-medium text-gray-700 mb-1">Choose a Username</label>
-                        <input type="text" id="reg-username" name="username" required minlength="3" placeholder="e.g., JohnDoe123" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
+                        <label for="reg-username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Choose a Username</label>
+                        <input type="text" id="reg-username" name="username" required minlength="3" placeholder="e.g., JohnDoe123" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-600 dark:text-white">
                     </div>
                     <button type="submit" class="button-primary w-full">Set Username and Enter Portal</button>
-                    <p class="text-xs text-gray-500 mt-2 text-center">Note: Since this app uses secure Firebase authentication, setting a username here links it to your unique anonymous ID, establishing your record.</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">Note: Since this app uses secure Firebase authentication, setting a username here links it to your unique anonymous ID, establishing your record.</p>
                 </form>
             </div>
         `;
@@ -448,15 +475,18 @@
         const categories = Object.keys(QUIZ_DATA);
 
         return `
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <div class="flex justify-between items-center mb-6 border-b pb-4 dark:border-gray-600">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800">Welcome, ${userName}</h1>
-                    <p class="text-sm text-gray-500">Your User ID: <code class="text-xs bg-gray-100 p-1 rounded">${userId}</code></p>
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Welcome, ${userName}</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Your User ID: <code class="text-xs bg-gray-100 dark:bg-gray-700 p-1 rounded">${userId}</code></p>
                 </div>
-                <button id="logout-btn" class="button-danger text-sm">Logout</button>
+                <div class="flex items-center space-x-2">
+                    ${getModeToggleHTML()}
+                    <button id="logout-btn" class="button-danger text-sm">Logout</button>
+                </div>
             </div>
 
-            <h2 class="text-xl font-semibold text-gray-700 mb-4">Quiz Categories & High Scores</h2>
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Quiz Categories & High Scores</h2>
 
             <div class="space-y-4">
                 ${categories.map(category => {
@@ -465,16 +495,16 @@
                     const percentage = maxScore > 0 ? ((score / maxScore) * 100).toFixed(0) : 0;
 
                     return `
-                        <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                        <div class="bg-white dark:bg-gray-600 p-5 border border-gray-200 dark:border-gray-500 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <div class="mb-3 sm:mb-0">
-                                <h3 class="text-lg font-bold text-gray-700 capitalize">${category}</h3>
-                                <p class="text-sm text-gray-500">5 Questions | Max Score: ${maxScore}</p>
+                                <h3 class="text-lg font-bold text-gray-700 dark:text-gray-100 capitalize">${category}</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">5 Questions | Max Score: ${maxScore}</p>
                             </div>
                             <div class="flex items-center space-x-4">
                                 <div class="text-center">
-                                    <p class="text-xs font-semibold text-gray-400">HIGH SCORE</p>
+                                    <p class="text-xs font-semibold text-gray-400 dark:text-gray-300">HIGH SCORE</p>
                                     <p class="text-2xl font-extrabold ${score >= 4 ? 'text-green-600' : 'text-yellow-600'}">${score}/${maxScore}</p>
-                                    <p class="text-sm text-gray-500">${percentage}%</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">${percentage}%</p>
                                 </div>
                                 <button data-category="${category}" class="quiz-start-btn button-secondary">
                                     Start Quiz
@@ -486,7 +516,7 @@
             </div>
             
             <div class="mt-8">
-                <h2 class="text-xl font-semibold text-gray-700 mb-4">Recent Quiz History</h2>
+                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Recent Quiz History</h2>
                 ${renderHistory(userRecords)}
             </div>
         `;
@@ -494,30 +524,29 @@
     
     function renderHistory(records) {
         if (!records || !records.history || records.history.length === 0) {
-            return '<p class="text-gray-500">No recent quiz attempts recorded.</p>';
+            return '<p class="text-gray-500 dark:text-gray-400">No recent quiz attempts recorded.</p>';
         }
 
-        const recentHistory = records.history.slice(-5).reverse(); // Show last 5 attempts
+        const recentHistory = records.history.slice(-5).reverse();
 
         return `
             <ul class="space-y-2 text-sm">
                 ${recentHistory.map(item => {
-                    const scoreClass = item.score / item.maxScore > 0.6 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+                    const scoreClass = item.score / item.maxScore > 0.6 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
                     const time = new Date(item.timestamp).toLocaleString();
                     return `
-                        <li class="p-3 rounded-xl border border-gray-200 flex justify-between items-center">
-                            <span class="capitalize font-medium text-gray-700">${item.category}</span>
+                        <li class="p-3 rounded-xl border border-gray-200 dark:border-gray-500 flex justify-between items-center bg-white dark:bg-gray-700">
+                            <span class="capitalize font-medium text-gray-700 dark:text-gray-100">${item.category}</span>
                             <span class="${scoreClass} px-3 py-1 rounded-full font-bold">
                                 ${item.score}/${item.maxScore}
                             </span>
-                            <span class="text-xs text-gray-400">${time}</span>
+                            <span class="text-xs text-gray-400 dark:text-gray-300">${time}</span>
                         </li>
                     `;
                 }).join('')}
             </ul>
         `;
     }
-
 
     function renderQuizScreen() {
         const category = currentQuizCategory;
@@ -526,28 +555,28 @@
         const totalQuestions = quiz.length;
 
         if (!question) {
-            return `<p class="text-center text-red-500">Quiz data missing for ${category}.</p>`;
+            return `<p class="text-center text-red-500 dark:text-red-400">Quiz data missing for ${category}.</p>`;
         }
 
         return `
-            <div class="flex justify-between items-center mb-6 pb-4 border-b">
-                <h1 class="text-2xl font-bold text-gray-800 capitalize">${category} Quiz</h1>
+            <div class="flex justify-between items-center mb-6 pb-4 border-b dark:border-gray-600">
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 capitalize">${category} Quiz</h1>
                 <p class="text-lg font-semibold text-blue-600">Q ${currentQuestionIndex + 1}/${totalQuestions}</p>
             </div>
 
             <form id="quiz-form">
-                <h3 class="text-xl font-semibold text-gray-700 mb-6">${question.q}</h3>
+                <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-6">${question.q}</h3>
 
                 <div class="space-y-3">
                     ${question.options.map((option, index) => `
                         <div class="custom-radio">
                             <input type="radio" id="option-${index}" name="answer" value="${option}" required ${currentQuizAnswers[currentQuestionIndex] === option ? 'checked' : ''}>
-                            <label for="option-${index}" class="text-gray-700">${option}</label>
+                            <label for="option-${index}" class="text-gray-700 dark:text-gray-300">${option}</label>
                         </div>
                     `).join('')}
                 </div>
 
-                <div class="flex justify-between items-center mt-8 pt-4 border-t">
+                <div class="flex justify-between items-center mt-8 pt-4 border-t dark:border-gray-600">
                     <button type="button" id="prev-btn" class="button-secondary ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}" ${currentQuestionIndex === 0 ? 'disabled' : ''} onclick="window.handlePrevQuestion()">
                         &larr; Previous
                     </button>
@@ -570,7 +599,6 @@
         const quiz = QUIZ_DATA[category];
         let correctCount = 0;
 
-        // Calculate score
         quiz.forEach((q, index) => {
             if (currentQuizAnswers[index] === q.a) {
                 correctCount++;
@@ -584,30 +612,34 @@
                               "Needs improvement. Study the materials and try again!";
 
         return `
+            <div class="flex justify-end">${getModeToggleHTML()}</div>
             <div class="text-center p-6">
-                <h1 class="text-3xl font-extrabold text-gray-800 mb-4">Quiz Complete!</h1>
-                <p class="text-xl font-medium text-gray-600 capitalize mb-8">${category} Results</p>
+                <h1 class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 mb-4">Quiz Complete!</h1>
+                <p class="text-xl font-medium text-gray-600 dark:text-gray-300 capitalize mb-8">${category} Results</p>
 
-                <div class="bg-blue-50 p-6 rounded-2xl inline-block shadow-inner mb-8">
-                    <p class="text-6xl font-black text-blue-600">${correctCount}/${maxScore}</p>
-                    <p class="text-xl font-bold text-gray-700 mt-2">${scorePercentage.toFixed(0)}%</p>
+                <div class="bg-blue-50 dark:bg-blue-900 p-6 rounded-2xl inline-block shadow-inner mb-8">
+                    <p class="text-6xl font-black text-blue-600 dark:text-blue-300">${correctCount}/${maxScore}</p>
+                    <p class="text-xl font-bold text-gray-700 dark:text-gray-100 mt-2">${scorePercentage.toFixed(0)}%</p>
                 </div>
 
                 <p class="text-lg font-semibold ${scorePercentage >= 80 ? 'text-green-600' : 'text-yellow-600'} mb-6">${resultMessage}</p>
 
-                <div class="space-y-3 text-left border-t pt-4">
-                    <h2 class="text-lg font-bold text-gray-700 mb-3">Review Answers</h2>
+                <div class="space-y-3 text-left border-t pt-4 dark:border-gray-600">
+                    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-100 mb-3">Review Answers</h2>
                     ${quiz.map((q, index) => {
                         const userAnswer = currentQuizAnswers[index] || 'No Answer';
                         const isCorrect = userAnswer === q.a;
                         const icon = isCorrect ? '✅' : '❌';
                         const color = isCorrect ? 'text-green-600' : 'text-red-600';
+                        const bgColor = isCorrect ? 'bg-green-50 dark:bg-green-800' : 'bg-red-50 dark:bg-red-800';
+                        const borderColor = isCorrect ? 'border-gray-200 dark:border-green-600' : 'border-gray-200 dark:border-red-600';
+                        const textColor = isCorrect ? 'dark:text-green-200' : 'dark:text-red-200';
 
                         return `
-                            <div class="p-4 rounded-xl ${isCorrect ? 'bg-green-50' : 'bg-red-50'} border border-gray-200">
-                                <p class="font-bold text-gray-800 mb-1">${icon} Q${index + 1}: ${q.q}</p>
-                                <p class="text-sm ${color}">Your Answer: ${userAnswer}</p>
-                                ${!isCorrect ? `<p class="text-sm text-gray-700">Correct Answer: ${q.a}</p>` : ''}
+                            <div class="p-4 rounded-xl ${bgColor} border ${borderColor}">
+                                <p class="font-bold text-gray-800 dark:text-gray-100 mb-1">${icon} Q${index + 1}: ${q.q}</p>
+                                <p class="text-sm ${color} ${textColor}">Your Answer: ${userAnswer}</p>
+                                ${!isCorrect ? `<p class="text-sm text-gray-700 dark:text-gray-300">Correct Answer: ${q.a}</p>` : ''}
                             </div>
                         `;
                     }).join('')}
@@ -632,22 +664,11 @@
         }
     }
 
-    // Note: Since we are using an anonymous Firebase auth token which is automatically issued, a 'login'
-    // essentially means 'set my username' if it's the first time, or 'continue' if a username is already set.
-    // For simplicity, I've combined the flow into a single "Register/Set Username" form.
-    function handleLogin(e) {
-        e.preventDefault();
-        // The anonymous user is already signed in. The only check needed is if they have a record/username.
-        // Since we check that in onAuthStateChanged, we can just reload the page or guide them.
-        setView('dashboard');
-    }
-
     async function handleLogout() {
         if (auth) {
             await signOut(auth);
             userRecords = null;
             userName = null;
-            // The onAuthStateChanged listener handles the view transition to 'auth'
             renderMessage("Successfully logged out. You can register a new username now.", 'secondary');
         }
     }
@@ -661,7 +682,6 @@
 
     window.handlePrevQuestion = () => {
         if (currentQuestionIndex > 0) {
-            // Save current selection before moving back
             const selectedOption = document.querySelector('input[name="answer"]:checked');
             if (selectedOption) {
                 currentQuizAnswers[currentQuestionIndex] = selectedOption.value;
@@ -674,7 +694,6 @@
     function handleQuizSubmit(e) {
         e.preventDefault();
         
-        // 1. Save answer for current question
         const selectedOption = document.querySelector('input[name="answer"]:checked');
         if (!selectedOption) {
             renderMessage("Please select an answer before proceeding.", 'danger');
@@ -685,11 +704,9 @@
         const totalQuestions = QUIZ_DATA[currentQuizCategory].length;
 
         if (currentQuestionIndex < totalQuestions - 1) {
-            // 2. Move to next question
             currentQuestionIndex++;
             setView('quiz');
         } else {
-            // 3. Final Submission
             let correctCount = 0;
             const quiz = QUIZ_DATA[currentQuizCategory];
             quiz.forEach((q, index) => {
@@ -698,10 +715,8 @@
                 }
             });
 
-            // Save the score to Firestore (async call)
             updateScoreRecord(currentQuizCategory, correctCount);
 
-            // Transition to results screen
             setView('results');
         }
     }
