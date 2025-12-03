@@ -130,33 +130,61 @@
     let currentQuizAnswers = {};
 
     const QUIZ_DATA = {
-        'computer hardware servicing': [
+        'information & communications technology (ict) servicing': [
+            // Original CHS questions
             { q: "Which tool is used for hardware to stand on to prevent static electricity from building up?", options: ["Hex driver", "Wire cutter", "Anti-static mat", "Philips head screwdriver"], a: "Anti-static mat" },
             { q: "What is the main 'brain' or 'heart' of a computer system?", options: ["Motherboard", "RAM", "CPU (Central Processing Unit)", "System Unit"], a: "CPU (Central Processing Unit)" },
             { q: "Which component performs arithmetic and logic operations?", options: ["CU (Control Unit)", "ALU (Arithmetic Logic Unit)", "Register", "Cache"], a: "ALU (Arithmetic Logic Unit)" },
             { q: "The primary circuit board of a PC, containing the CPU and slots for other devices, is called the:", options: ["Video Card", "Power Supply", "Motherboard", "Hard Disk Drive"], a: "Motherboard" },
             { q: "USB is the acronym of:", options: ["Universal Series Bus", "Universal System Bus", "Universal Serial Bus", "Data Bus"], a: "Universal Serial Bus" },
+            // New CHS questions
+            { q: "What should you do first when a computer won't turn on?", options: ["Replace the motherboard", "Check if it's plugged in and the power supply is working", "Delete all files", "Upgrade the RAM"], a: "Check if it's plugged in and the power supply is working" },
+            { q: "Which component is responsible for cooling the CPU in a desktop PC?", options: ["Hard drive", "Heat sink and fan", "Graphics card", "USB ports"], a: "Heat sink and fan" },
+            { q: "When installing a new graphics card, what must you ensure?", options: ["It matches the motherboard's socket type", "The power supply has enough wattage", "The monitor is turned off", "All of the above"], a: "All of the above" },
+            { q: "What tool is commonly used to open a computer case without damaging it?", options: ["Hammer", "Screwdriver", "Pliers", "Drill"], a: "Screwdriver" },
+            { q: "If a hard drive is making clicking sounds, what might be the issue?", options: ["It's overheating", "Mechanical failure, like a failing platter", "Too much RAM", "Outdated software"], a: "Mechanical failure, like a failing platter" },
         ],
-        'garments': [
+        'garments & fashion design': [
+            // Original Garments questions
             { q: "What is the term for the vertical yarns in a woven fabric?", options: ["Weft", "Selvedge", "Warp", "Grain"], a: "Warp" },
             { q: "Which spinning method is known for producing compact and strong yarns?", options: ["Open-end spinning", "Ring spinning", "Air-jet spinning", "Friction spinning"], a: "Ring spinning" },
             { q: "What is the primary purpose of sizing in the weaving process?", options: ["Adding color to the yarn", "Reducing the thickness", "Improving yarn strength", "Removing impurities"], a: "Improving yarn strength" },
             { q: "The process of converting waste material into a new product is called:", options: ["Redesigning", "Recycling", "Reformation", "Recreation"], a: "Recycling" },
             { q: "Which of the following is an elastomeric fiber?", options: ["Acrylic", "Nylon", "Spandex", "Mod Acrylic"], a: "Spandex" },
+            // New Garments questions
+            { q: "What does \"draping\" refer to in fashion design?", options: ["Cutting fabric with scissors", "Pinning fabric directly on a mannequin to create shapes", "Sewing hems by hand", "Dyeing fabric colors"], a: "Pinning fabric directly on a mannequin to create shapes" },
+            { q: "Which of these is a key element of sustainable fashion?", options: ["Using only synthetic materials", "Recycling old clothes into new designs", "Ignoring fabric origins", "Mass-producing identical items"], a: "Recycling old clothes into new designs" },
+            { q: "In garment construction, what is the purpose of a \"seam allowance\"?", options: ["To add decorative stitches", "To provide extra fabric for sewing and fitting", "To measure fabric weight", "To choose thread color"], a: "To provide extra fabric for sewing and fitting" },
+            { q: "Which tool is essential for creating accurate patterns in fashion design?", options: ["Iron", "Ruler and French curve", "Hair dryer", "Glue gun"], a: "Ruler and French curve" },
+            { q: "What fabric is best for winter coats due to its warmth and water resistance?", options: ["Chiffon", "Wool", "Organza", "Tulle"], a: "Wool" },
         ],
-        'food servicing': [
+        'food & beverage services (fbs)': [
+            // Original Food Servicing questions
             { q: "The person who serves alcoholic beverages in a restaurant is called a:", options: ["Trancheur", "Sommelier", "Debarrasseur", "Commise de rang"], a: "Sommelier" },
             { q: "What is the proper refrigerator temperature range in degrees Fahrenheit to prevent bacterial growth?", options: ["Less than 32°F", "32°F - 40°F", "40°F - 45°F", "45°F - 50°F"], a: "32°F - 40°F" },
             { q: "Which of the following should NOT be used to thaw frozen meats?", options: ["Refrigerator thawing", "Defrost under cold running water", "Defrost in microwave", "Defrost at room temperature"], a: "Defrost at room temperature" },
             { q: "What system is crucial for defining and monitoring critical points in food preparation to ensure safety?", options: ["FIFO", "HACCP", "POS", "RFP"], a: "HACCP" },
             { q: "A restaurant that primarily offers counter service and limited seating, like a hot dog stand or sandwich shop, represents which service type?", options: ["Fine dining", "Full service", "Catering", "Quick Service"], a: "Quick Service" },
+            // New Food Servicing questions
+            { q: "What is the primary goal of food safety protocols in a restaurant?", options: ["To make food taste better", "To prevent foodborne illnesses", "To reduce cooking time", "To increase portion sizes"], a: "To prevent foodborne illnesses" },
+            { q: "Which method helps preserve food freshness in a commercial kitchen?", options: ["Leaving it out at room temperature", "Using FIFO (First In, First Out) for inventory", "Mixing raw and cooked foods", "Ignoring expiration dates"], a: "Using FIFO (First In, First Out) for inventory" },
+            { q: "In menu planning, what does \"portion control\" aim to achieve?", options: ["Higher profits through larger servings", "Balanced nutrition and cost efficiency", "Faster service times", "More variety in dishes"], a: "Balanced nutrition and cost efficiency" },
+            { q: "What equipment is essential for safe food storage in a freezer?", options: ["Metal shelves", "Thermometer to monitor temperature", "Open containers", "Bright lighting"], a: "Thermometer to monitor temperature" },
+            { q: "How can a restaurant manager reduce food waste?", options: ["Over-preparing meals", "Donating leftovers to shelters", "Using expired ingredients", "Ignoring customer feedback"], a: "Donating leftovers to shelters" },
         ],
-        'electrical technology': [
+        'electrical & electronic technology': [
+            // Original Electrical Technology questions
             { q: "What is the SI unit of electrical resistance?", options: ["Ampere", "Volt", "Ohm", "Watt"], a: "Ohm" },
             { q: "According to Kirchhoff's voltage law, the algebraic sum of all IR drops and EMFs in any closed loop of a network is always:", options: ["Positive", "Negative", "Zero", "Determined by EMFs"], a: "Zero" },
             { q: "The main function of a fuse is to:", options: ["Protect the line", "Open the circuit", "Prevent excessive currents", "Protect the appliance"], a: "Prevent excessive currents" },
             { q: "Which law describes the relationship between the current flowing through a conductor and the voltage across it?", options: ["Lenz's Law", "Faraday's Law", "Ohm's Law", "Kirchhoff's Law"], a: "Ohm's Law" },
             { q: "Kirchhoff's current law (KCL) is applicable only to:", options: ["Closed loops in a network", "Electric circuits", "Junctions in a network", "Non-linear circuits"], a: "Junctions in a network" },
+            // New Electronics Technology questions
+            { q: "What does a resistor do in an electronic circuit?", options: ["Stores energy", "Limits the flow of current", "Amplifies signals", "Generates power"], a: "Limits the flow of current" },
+            { q: "Which component is used to store electrical charge?", options: ["Inductor", "Capacitor", "Transistor", "Diode"], a: "Capacitor" },
+            { q: "In digital electronics, what does \"binary\" refer to?", options: ["A type of wire", "A system using 0s and 1s", "A power source", "A soldering tool"], a: "A system using 0s and 1s" },
+            { q: "What is the function of a microcontroller in a device like an Arduino?", options: ["To provide light", "To process and control operations", "To store large files", "To convert AC to DC"], a: "To process and control operations" },
+            { q: "Which law describes the relationship between voltage, current, and resistance?", options: ["Newton's Law", "Ohm's Law", "Faraday's Law", "Kirchhoff's Law"], a: "Ohm's Law" },
         ]
     };
 
@@ -248,10 +276,10 @@
             const initialData = {
                 username: newUsername,
                 scores: {
-                    'computer hardware servicing': 0,
-                    'garments': 0,
-                    'food servicing': 0,
-                    'electrical technology': 0,
+                    'information & communications technology (ict) servicing': 0,
+                    'garments & fashion design': 0,
+                    'food & beverage services (fbs)': 0,
+                    'electrical & electronic technology': 0,
                 },
                 history: []
             };
@@ -283,7 +311,7 @@
                 const docSnap = await transaction.get(recordsRef);
                 let data = docSnap.exists() ? docSnap.data() : {
                     username: userName,
-                    scores: { 'computer hardware servicing': 0, 'garments': 0, 'food servicing': 0, 'electrical technology': 0 },
+                    scores: { 'information & communications technology (ict) servicing': 0, 'garments & fashion design': 0, 'food & beverage services (fbs)': 0, 'electrical & electronic technology': 0 },
                     history: []
                 };
 
@@ -428,17 +456,18 @@
                     const maxScore = QUIZ_DATA[category].length;
                     const score = records.scores[category] || 0;
                     const percentage = maxScore > 0 ? ((score / maxScore) * 100).toFixed(0) : 0;
+                    const formattedCategory = category.toUpperCase().replace(/\s/g, ' '); // Keep original formatting style for now
 
                     return `
                         <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <div class="mb-3 sm:mb-0">
                                 <h3 class="text-lg font-bold text-gray-700 capitalize">${category}</h3>
-                                <p class="text-sm text-gray-500">5 Questions | Max Score: ${maxScore}</p>
+                                <p class="text-sm text-gray-500">${maxScore} Questions | Max Score: ${maxScore}</p>
                             </div>
                             <div class="flex items-center space-x-4">
                                 <div class="text-center">
                                     <p class="text-xs font-semibold text-gray-400">HIGH SCORE</p>
-                                    <p class="text-2xl font-extrabold ${score >= 4 ? 'text-green-600' : 'text-yellow-600'}">${score}/${maxScore}</p>
+                                    <p class="text-2xl font-extrabold ${score >= (maxScore * 0.8) ? 'text-green-600' : 'text-yellow-600'}">${score}/${maxScore}</p>
                                     <p class="text-sm text-gray-500">${percentage}%</p>
                                 </div>
                                 <button data-category="${category}" class="quiz-start-btn button-secondary">
