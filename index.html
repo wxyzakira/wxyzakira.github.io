@@ -22,8 +22,12 @@
             padding: 1rem;
             transition: background-color 0.3s;
         }
+        /* Global Dark Mode Backgrounds */
+        .dark {
+            color-scheme: dark;
+        }
         .dark body {
-            background-color: #1f2937;
+            background-color: #111827; /* Darker Gray for the overall page background */
         }
         .app-container {
             max-width: 600px;
@@ -36,7 +40,7 @@
             transition: background-color 0.3s, box-shadow 0.3s;
         }
         .dark .app-container {
-            background-color: #374151;
+            background-color: #1f2937; /* Even darker gray for the main card */
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
         .button-primary {
@@ -87,6 +91,8 @@
         }
         .dark .custom-radio label {
             border: 2px solid #4b5563;
+            background-color: #374151; /* Dark background for unselected option */
+            color: #d1d5db; /* Light gray text */
         }
         .custom-radio input[type="radio"]:checked + label {
             border-color: var(--primary-color);
@@ -417,7 +423,6 @@
             body.classList.add('dark');
             localStorage.theme = 'dark';
         }
-        // Re-render to update the sun/moon icon based on the new state
         renderApp();
     }
     window.toggleDarkMode = toggleDarkMode;
@@ -495,7 +500,7 @@
                     const percentage = maxScore > 0 ? ((score / maxScore) * 100).toFixed(0) : 0;
 
                     return `
-                        <div class="bg-white dark:bg-gray-600 p-5 border border-gray-200 dark:border-gray-500 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                        <div class="bg-white dark:bg-gray-700 p-5 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <div class="mb-3 sm:mb-0">
                                 <h3 class="text-lg font-bold text-gray-700 dark:text-gray-100 capitalize">${category}</h3>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">5 Questions | Max Score: ${maxScore}</p>
@@ -535,7 +540,7 @@
                     const scoreClass = item.score / item.maxScore > 0.6 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
                     const time = new Date(item.timestamp).toLocaleString();
                     return `
-                        <li class="p-3 rounded-xl border border-gray-200 dark:border-gray-500 flex justify-between items-center bg-white dark:bg-gray-700">
+                        <li class="p-3 rounded-xl border border-gray-200 dark:border-gray-600 flex justify-between items-center bg-white dark:bg-gray-700">
                             <span class="capitalize font-medium text-gray-700 dark:text-gray-100">${item.category}</span>
                             <span class="${scoreClass} px-3 py-1 rounded-full font-bold">
                                 ${item.score}/${item.maxScore}
@@ -631,8 +636,8 @@
                         const isCorrect = userAnswer === q.a;
                         const icon = isCorrect ? '✅' : '❌';
                         const color = isCorrect ? 'text-green-600' : 'text-red-600';
-                        const bgColor = isCorrect ? 'bg-green-50 dark:bg-green-800' : 'bg-red-50 dark:bg-red-800';
-                        const borderColor = isCorrect ? 'border-gray-200 dark:border-green-600' : 'border-gray-200 dark:border-red-600';
+                        const bgColor = isCorrect ? 'bg-green-50 dark:bg-green-900' : 'bg-red-50 dark:bg-red-900';
+                        const borderColor = isCorrect ? 'border-gray-200 dark:border-green-800' : 'border-gray-200 dark:border-red-800';
                         const textColor = isCorrect ? 'dark:text-green-200' : 'dark:text-red-200';
 
                         return `
