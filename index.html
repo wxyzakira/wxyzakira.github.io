@@ -129,7 +129,7 @@
     let currentQuestionIndex = 0;
     let currentQuizAnswers = {};
 
-    // --- QUIZ DATA START (ORIGINAL CATEGORIES + ALL QUESTIONS) ---
+    // --- QUIZ DATA START (UPDATED CATEGORY NAMES + ALL QUESTIONS) ---
     const QUIZ_DATA = {
         'computer hardware servicing': [
             // Original 5
@@ -145,7 +145,7 @@
             { q: "What tool is commonly used to open a computer case without damaging it?", options: ["Hammer", "Screwdriver", "Pliers", "Drill"], a: "Screwdriver" },
             { q: "If a hard drive is making clicking sounds, what might be the issue?", options: ["It's overheating", "Mechanical failure, like a failing platter", "Too much RAM", "Outdated software"], a: "Mechanical failure, like a failing platter" },
         ],
-        'garments': [
+        'Garments Fashion & Design Technology': [ // Renamed
             // Original 5
             { q: "What is the term for the vertical yarns in a woven fabric?", options: ["Weft", "Selvedge", "Warp", "Grain"], a: "Warp" },
             { q: "Which spinning method is known for producing compact and strong yarns?", options: ["Open-end spinning", "Ring spinning", "Air-jet spinning", "Friction spinning"], a: "Ring spinning" },
@@ -159,7 +159,7 @@
             { q: "Which tool is essential for creating accurate patterns in fashion design?", options: ["Iron", "Ruler and French curve", "Hair dryer", "Glue gun"], a: "Ruler and French curve" },
             { q: "What fabric is best for winter coats due to its warmth and water resistance?", options: ["Chiffon", "Wool", "Organza", "Tulle"], a: "Wool" },
         ],
-        'food servicing': [
+        'Food Service and Management Technology': [ // Renamed
             // Original 5
             { q: "The person who serves alcoholic beverages in a restaurant is called a:", options: ["Trancheur", "Sommelier", "Debarrasseur", "Commise de rang"], a: "Sommelier" },
             { q: "What is the proper refrigerator temperature range in degrees Fahrenheit to prevent bacterial growth?", options: ["Less than 32°F", "32°F - 40°F", "40°F - 45°F", "45°F - 50°F"], a: "32°F - 40°F" },
@@ -173,14 +173,14 @@
             { q: "What equipment is essential for safe food storage in a freezer?", options: ["Metal shelves", "Thermometer to monitor temperature", "Open containers", "Bright lighting"], a: "Thermometer to monitor temperature" },
             { q: "How can a restaurant manager reduce food waste?", options: ["Over-preparing meals", "Donating leftovers to shelters", "Using expired ingredients", "Ignoring customer feedback"], a: "Donating leftovers to shelters" },
         ],
-        'electrical technology': [
-            // Original 5
+        'electrical technology': [ // Renamed (from electrical technology/electronics)
+            // Original 5 (from electrical technology)
             { q: "What is the SI unit of electrical resistance?", options: ["Ampere", "Volt", "Ohm", "Watt"], a: "Ohm" },
             { q: "According to Kirchhoff's voltage law, the algebraic sum of all IR drops and EMFs in any closed loop of a network is always:", options: ["Positive", "Negative", "Zero", "Determined by EMFs"], a: "Zero" },
             { q: "The main function of a fuse is to:", options: ["Protect the line", "Open the circuit", "Prevent excessive currents", "Protect the appliance"], a: "Prevent excessive currents" },
             { q: "Which law describes the relationship between the current flowing through a conductor and the voltage across it?", options: ["Lenz's Law", "Faraday's Law", "Ohm's Law", "Kirchhoff's Law"], a: "Ohm's Law" },
             { q: "Kirchhoff's current law (KCL) is applicable only to:", options: ["Closed loops in a network", "Electric circuits", "Junctions in a network", "Non-linear circuits"], a: "Junctions in a network" },
-            // Added 5 (from your new list)
+            // Added 5 (from your new list, which covered electronics technology)
             { q: "What does a resistor do in an electronic circuit?", options: ["Stores energy", "Limits the flow of current", "Amplifies signals", "Generates power"], a: "Limits the flow of current" },
             { q: "Which component is used to store electrical charge?", options: ["Inductor", "Capacitor", "Transistor", "Diode"], a: "Capacitor" },
             { q: "In digital electronics, what does \"binary\" refer to?", options: ["A type of wire", "A system using 0s and 1s", "A power source", "A soldering tool"], a: "A system using 0s and 1s" },
@@ -275,12 +275,13 @@
             await updateProfile(auth.currentUser, { displayName: newUsername });
             userName = newUsername;
 
+            // NOTE: The scores object keys MUST match the QUIZ_DATA keys exactly.
             const initialData = {
                 username: newUsername,
                 scores: {
                     'computer hardware servicing': 0,
-                    'garments': 0,
-                    'food servicing': 0,
+                    'Garments Fashion & Design Technology': 0,
+                    'Food Service and Management Technology': 0,
                     'electrical technology': 0,
                 },
                 history: []
@@ -313,7 +314,12 @@
                 const docSnap = await transaction.get(recordsRef);
                 let data = docSnap.exists() ? docSnap.data() : {
                     username: userName,
-                    scores: { 'computer hardware servicing': 0, 'garments': 0, 'food servicing': 0, 'electrical technology': 0 },
+                    scores: { 
+                        'computer hardware servicing': 0, 
+                        'Garments Fashion & Design Technology': 0, 
+                        'Food Service and Management Technology': 0, 
+                        'electrical technology': 0 
+                    },
                     history: []
                 };
 
