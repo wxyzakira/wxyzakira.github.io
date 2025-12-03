@@ -8,9 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #3b82f6;
-            --secondary-color: #10b981;
-            --danger-color: #ef4444;
+            --primary-color: #3b82f6; /* Blue 500 */
+            --secondary-color: #10b981; /* Emerald 500 */
+            --danger-color: #ef4444; /* Red 500 */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -60,6 +60,7 @@
         .button-danger:hover {
             background-color: #dc2626;
         }
+        /* Custom radio button styling */
         .custom-radio input[type="radio"] {
             position: absolute;
             opacity: 0;
@@ -78,12 +79,12 @@
         }
         .custom-radio input[type="radio"]:checked + label {
             border-color: var(--primary-color);
-            background-color: #eff6ff;
-            box-shadow: 0 0 0 2px #bfdbfe;
+            background-color: #eff6ff; /* Blue 50 */
+            box-shadow: 0 0 0 2px #bfdbfe; /* Blue 200 ring */
         }
     </style>
 </head>
-<body id="body-main">
+<body>
 
 <div id="app" class="app-container">
     <div id="loading-screen" class="text-center p-8">
@@ -94,23 +95,28 @@
         <p class="mt-4 text-gray-600">Initializing database and authentication...</p>
     </div>
 
-</div>
+    </div>
 
 <script type="module">
+    // --- FIREBASE IMPORTS ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, runTransaction, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+    // Set Firebase Log Level to debug for easy troubleshooting
     setLogLevel('debug');
 
+    // --- GLOBAL VARIABLES & INITIALIZATION ---
     let app, db, auth;
     let userId = null;
     let userName = null;
     let userRecords = null;
     let isAuthReady = false;
 
+    // Canvas environment variables
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     
+    // Default config (user provided) used if the Canvas injected config is somehow unavailable.
     const defaultFirebaseConfig = {
         apiKey: "AIzaSyATrF3HU85bkDfhcv2P8NFXh-30UWxD6yU",
         authDomain: "kkkk-d3f69.firebaseapp.com",
@@ -120,16 +126,18 @@
         appId: "1:105909143390:web:c62140b87c3072b1c031cf"
     };
 
+    // We prioritize the Canvas-provided config which is required for authentication to work correctly.
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
 
     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    let currentView = 'auth';
+    // App state
+    let currentView = 'auth'; // 'auth', 'dashboard', 'quiz', 'results'
     let currentQuizCategory = null;
     let currentQuestionIndex = 0;
     let currentQuizAnswers = {};
 
-    // --- QUIZ DATA START (UPDATED CATEGORY NAMES + ALL QUESTIONS) ---
+    // --- QUIZ DATA START (UPDATED CATEGORY NAMES + ALL 10 QUESTIONS) ---
     const QUIZ_DATA = {
         'Computer Hardware Servicing': [ // UPDATED
             // Original 5
@@ -138,7 +146,7 @@
             { q: "Which component performs arithmetic and logic operations?", options: ["CU (Control Unit)", "ALU (Arithmetic Logic Unit)", "Register", "Cache"], a: "ALU (Arithmetic Logic Unit)" },
             { q: "The primary circuit board of a PC, containing the CPU and slots for other devices, is called the:", options: ["Video Card", "Power Supply", "Motherboard", "Hard Disk Drive"], a: "Motherboard" },
             { q: "USB is the acronym of:", options: ["Universal Series Bus", "Universal System Bus", "Universal Serial Bus", "Data Bus"], a: "Universal Serial Bus" },
-            // Added 5 (from your new list)
+            // Added 5 (from your provided list)
             { q: "What should you do first when a computer won't turn on?", options: ["Replace the motherboard", "Check if it's plugged in and the power supply is working", "Delete all files", "Upgrade the RAM"], a: "Check if it's plugged in and the power supply is working" },
             { q: "Which component is responsible for cooling the CPU in a desktop PC?", options: ["Hard drive", "Heat sink and fan", "Graphics card", "USB ports"], a: "Heat sink and fan" },
             { q: "When installing a new graphics card, what must you ensure?", options: ["It matches the motherboard's socket type", "The power supply has enough wattage", "The monitor is turned off", "All of the above"], a: "All of the above" },
@@ -152,7 +160,7 @@
             { q: "What is the primary purpose of sizing in the weaving process?", options: ["Adding color to the yarn", "Reducing the thickness", "Improving yarn strength", "Removing impurities"], a: "Improving yarn strength" },
             { q: "The process of converting waste material into a new product is called:", options: ["Redesigning", "Recycling", "Reformation", "Recreation"], a: "Recycling" },
             { q: "Which of the following is an elastomeric fiber?", options: ["Acrylic", "Nylon", "Spandex", "Mod Acrylic"], a: "Spandex" },
-            // Added 5 (from your new list, including MCQs from your T/F block)
+            // Added 5 (from your provided list)
             { q: "What does \"draping\" refer to in fashion design?", options: ["Cutting fabric with scissors", "Pinning fabric directly on a mannequin to create shapes", "Sewing hems by hand", "Dyeing fabric colors"], a: "Pinning fabric directly on a mannequin to create shapes" },
             { q: "Which of these is a key element of sustainable fashion?", options: ["Using only synthetic materials", "Recycling old clothes into new designs", "Ignoring fabric origins", "Mass-producing identical items"], a: "Recycling old clothes into new designs" },
             { q: "In garment construction, what is the purpose of a \"seam allowance\"?", options: ["To add decorative stitches", "To provide extra fabric for sewing and fitting", "To measure fabric weight", "To choose thread color"], a: "To provide extra fabric for sewing and fitting" },
@@ -166,21 +174,21 @@
             { q: "Which of the following should NOT be used to thaw frozen meats?", options: ["Refrigerator thawing", "Defrost under cold running water", "Defrost in microwave", "Defrost at room temperature"], a: "Defrost at room temperature" },
             { q: "What system is crucial for defining and monitoring critical points in food preparation to ensure safety?", options: ["FIFO", "HACCP", "POS", "RFP"], a: "HACCP" },
             { q: "A restaurant that primarily offers counter service and limited seating, like a hot dog stand or sandwich shop, represents which service type?", options: ["Fine dining", "Full service", "Catering", "Quick Service"], a: "Quick Service" },
-            // Added 5 (from your new list, including MCQs from your T/F block)
+            // Added 5 (from your provided list)
             { q: "What is the primary goal of food safety protocols in a restaurant?", options: ["To make food taste better", "To prevent foodborne illnesses", "To reduce cooking time", "To increase portion sizes"], a: "To prevent foodborne illnesses" },
             { q: "Which method helps preserve food freshness in a commercial kitchen?", options: ["Leaving it out at room temperature", "Using FIFO (First In, First Out) for inventory", "Mixing raw and cooked foods", "Ignoring expiration dates"], a: "Using FIFO (First In, First Out) for inventory" },
             { q: "In menu planning, what does \"portion control\" aim to achieve?", options: ["Higher profits through larger servings", "Balanced nutrition and cost efficiency", "Faster service times", "More variety in dishes"], a: "Balanced nutrition and cost efficiency" },
             { q: "What equipment is essential for safe food storage in a freezer?", options: ["Metal shelves", "Thermometer to monitor temperature", "Open containers", "Bright lighting"], a: "Thermometer to monitor temperature" },
             { q: "How can a restaurant manager reduce food waste?", options: ["Over-preparing meals", "Donating leftovers to shelters", "Using expired ingredients", "Ignoring customer feedback"], a: "Donating leftovers to shelters" },
         ],
-        'electrical technology': [ 
+        'Electrical Technology': [ // UPDATED
             // Initial 5 (from electrical technology)
             { q: "What is the SI unit of electrical resistance?", options: ["Ampere", "Volt", "Ohm", "Watt"], a: "Ohm" },
             { q: "According to Kirchhoff's voltage law, the algebraic sum of all IR drops and EMFs in any closed loop of a network is always:", options: ["Positive", "Negative", "Zero", "Determined by EMFs"], a: "Zero" },
             { q: "The main function of a fuse is to:", options: ["Protect the line", "Open the circuit", "Prevent excessive currents", "Protect the appliance"], a: "Prevent excessive currents" },
             { q: "Which law describes the relationship between the current flowing through a conductor and the voltage across it?", options: ["Lenz's Law", "Faraday's Law", "Ohm's Law", "Kirchhoff's Law"], a: "Ohm's Law" },
             { q: "Kirchhoff's current law (KCL) is applicable only to:", options: ["Closed loops in a network", "Electric circuits", "Junctions in a network", "Non-linear circuits"], a: "Junctions in a network" },
-            // Added 5 (from your new list, originally under Electronics Technology)
+            // Added 5 (from your provided list, originally under Electronics Technology)
             { q: "What does a resistor do in an electronic circuit?", options: ["Stores energy", "Limits the flow of current", "Amplifies signals", "Generates power"], a: "Limits the flow of current" },
             { q: "Which component is used to store electrical charge?", options: ["Inductor", "Capacitor", "Transistor", "Diode"], a: "Capacitor" },
             { q: "In digital electronics, what does \"binary\" refer to?", options: ["A type of wire", "A system using 0s and 1s", "A power source", "A soldering tool"], a: "A system using 0s and 1s" },
@@ -189,6 +197,8 @@
         ]
     };
     // --- QUIZ DATA END ---
+
+    // --- FIREBASE INITIALIZATION & AUTHENTICATION ---
 
     async function initializeFirebase() {
         if (!firebaseConfig) {
@@ -202,6 +212,7 @@
             db = getFirestore(app);
             auth = getAuth(app);
 
+            // 1. Attempt Sign In
             if (initialAuthToken) {
                 await signInWithCustomToken(auth, initialAuthToken);
                 console.log("Signed in with custom token.");
@@ -210,15 +221,19 @@
                 console.log("Signed in anonymously.");
             }
 
+            // 2. Set up Auth State Listener
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
+                    // Check if the user is already registered (has a username in Firestore or display name)
                     if (user.displayName) {
                         userName = user.displayName;
                         isAuthReady = true;
+                        // Start listening to records immediately if we have a display name
                         setupRecordListener();
                         setView('dashboard');
                     } else {
+                        // User is authenticated but needs to register a username
                         isAuthReady = true;
                         setView('auth');
                     }
@@ -237,7 +252,10 @@
         }
     }
 
+    // --- FIREBASE FIRESTORE FUNCTIONS ---
+
     const getRecordsRef = (uid) => {
+        // Path: /artifacts/{appId}/users/{userId}/quiz_records/data
         const recordsCollectionPath = `/artifacts/${appId}/users/${uid}/quiz_records`;
         return doc(db, recordsCollectionPath, 'data');
     };
@@ -253,9 +271,11 @@
                 userName = userRecords.username || auth.currentUser.displayName || 'Guest';
                 console.log("User records loaded:", userRecords);
             } else {
+                // If records don't exist, they will be created upon first registration or quiz completion
                 userRecords = null;
                 console.log("No user records found. Dashboard will prompt registration/login.");
             }
+            // Re-render the current view to reflect the new state (especially the dashboard)
             renderApp();
         }, (error) => {
             console.error("Error setting up Firestore listener:", error);
@@ -272,16 +292,18 @@
         const recordsRef = getRecordsRef(userId);
 
         try {
+            // Update Auth display name
             await updateProfile(auth.currentUser, { displayName: newUsername });
             userName = newUsername;
 
+            // Initialize or update the private record document with the username and initial scores
             const initialData = {
                 username: newUsername,
                 scores: {
                     'Computer Hardware Servicing': 0, // UPDATED
                     'Garments Fashion & Design Technology': 0,
                     'Food Service and Management Technology': 0,
-                    'electrical technology': 0,
+                    'Electrical Technology': 0, // UPDATED
                 },
                 history: []
             };
@@ -289,8 +311,9 @@
             await setDoc(recordsRef, initialData, { merge: true });
             userRecords = initialData;
 
+            // Since we set the display name, the onAuthStateChanged listener will handle the transition to dashboard.
             renderMessage(`Welcome, ${newUsername}! Registration successful.`, 'secondary');
-            setupRecordListener();
+            setupRecordListener(); // Ensure listener is attached
             setView('dashboard');
 
         } catch (error) {
@@ -317,7 +340,7 @@
                         'Computer Hardware Servicing': 0, // UPDATED
                         'Garments Fashion & Design Technology': 0, 
                         'Food Service and Management Technology': 0, 
-                        'electrical technology': 0 
+                        'Electrical Technology': 0 // UPDATED
                     },
                     history: []
                 };
@@ -335,7 +358,7 @@
                 });
 
                 transaction.set(recordsRef, data);
-                userRecords = data;
+                userRecords = data; // Update local state immediately for fast UI feedback
             });
 
             renderMessage(`Score saved successfully! High score for ${category} updated.`, 'secondary');
@@ -344,6 +367,8 @@
             renderMessage(`Failed to save score: ${error.message}`, 'danger');
         }
     }
+
+    // --- UI/VIEW MANAGEMENT ---
 
     function setView(viewName) {
         currentView = viewName;
@@ -354,16 +379,18 @@
         const appDiv = document.getElementById('app');
         const messageId = `msg-${Date.now()}`;
         const colorClass = type === 'danger' ? 'bg-red-100 text-red-800' :
-                             type === 'secondary' ? 'bg-green-100 text-green-800' :
-                             'bg-blue-100 text-blue-800';
+                           type === 'secondary' ? 'bg-green-100 text-green-800' :
+                           'bg-blue-100 text-blue-800';
 
         const messageDiv = document.createElement('div');
         messageDiv.id = messageId;
         messageDiv.className = `p-3 mb-4 rounded-xl text-sm font-medium ${colorClass} transition-opacity duration-500 ease-out`;
         messageDiv.innerHTML = message;
 
+        // Find the first child of the app container to insert the message before it
         appDiv.insertBefore(messageDiv, appDiv.firstChild);
 
+        // Auto-remove after 5 seconds
         setTimeout(() => {
             const el = document.getElementById(messageId);
             if (el) {
@@ -375,6 +402,7 @@
 
     function renderApp() {
         const appDiv = document.getElementById('app');
+        // Clear old content, but keep messages
         const contentDiv = document.createElement('div');
         contentDiv.id = 'content';
         contentDiv.className = 'pt-2';
@@ -391,6 +419,7 @@
             contentDiv.innerHTML = '<h2 class="text-xl text-center text-gray-700">Application Error</h2>';
         }
 
+        // Replace content, keeping existing message blocks intact
         const existingContent = document.getElementById('content');
         if (existingContent) {
             appDiv.replaceChild(contentDiv, existingContent);
@@ -398,9 +427,10 @@
             appDiv.appendChild(contentDiv);
         }
 
+        // Attach event listeners after content is rendered
         if (currentView === 'auth') {
             document.getElementById('register-form')?.addEventListener('submit', handleRegistration);
-            document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
+            document.getElementById('login-form')?.addEventListener('submit', handleLogin);
         } else if (currentView === 'dashboard') {
             document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
             document.querySelectorAll('.quiz-start-btn').forEach(button => {
@@ -415,6 +445,7 @@
 
     function renderAuthScreen() {
         if (userName) {
+            // This case occurs if auth is successful but we land back on auth screen after logout
             return `
                 <div class="text-center p-4">
                     <h1 class="text-3xl font-bold text-gray-800 mb-6">Welcome Back!</h1>
@@ -475,7 +506,7 @@
                                     <p class="text-xs font-semibold text-gray-400">HIGH SCORE</p>
                                     <p class="text-2xl font-extrabold ${score >= (maxScore * 0.8) ? 'text-green-600' : 'text-yellow-600'}">${score}/${maxScore}</p>
                                     <p class="text-sm text-gray-500">${percentage}%</p>
-                                </div>
+                            </div>
                                 <button data-category="${category}" class="quiz-start-btn button-secondary">
                                     Start Quiz
                                 </button>
@@ -497,7 +528,7 @@
             return '<p class="text-gray-500">No recent quiz attempts recorded.</p>';
         }
 
-        const recentHistory = records.history.slice(-5).reverse();
+        const recentHistory = records.history.slice(-5).reverse(); // Show last 5 attempts
 
         return `
             <ul class="space-y-2 text-sm">
@@ -517,6 +548,7 @@
             </ul>
         `;
     }
+
 
     function renderQuizScreen() {
         const category = currentQuizCategory;
@@ -569,6 +601,7 @@
         const quiz = QUIZ_DATA[category];
         let correctCount = 0;
 
+        // Calculate score
         quiz.forEach((q, index) => {
             if (currentQuizAnswers[index] === q.a) {
                 correctCount++;
@@ -600,10 +633,9 @@
                         const isCorrect = userAnswer === q.a;
                         const icon = isCorrect ? '✅' : '❌';
                         const color = isCorrect ? 'text-green-600' : 'text-red-600';
-                        const bgColor = isCorrect ? 'bg-green-50' : 'bg-red-50';
 
                         return `
-                            <div class="p-4 rounded-xl ${bgColor} border border-gray-200">
+                            <div class="p-4 rounded-xl ${isCorrect ? 'bg-green-50' : 'bg-red-50'} border border-gray-200">
                                 <p class="font-bold text-gray-800 mb-1">${icon} Q${index + 1}: ${q.q}</p>
                                 <p class="text-sm ${color}">Your Answer: ${userAnswer}</p>
                                 ${!isCorrect ? `<p class="text-sm text-gray-700">Correct Answer: ${q.a}</p>` : ''}
@@ -631,11 +663,22 @@
         }
     }
 
+    // Note: Since we are using an anonymous Firebase auth token which is automatically issued, a 'login'
+    // essentially means 'set my username' if it's the first time, or 'continue' if a username is already set.
+    // For simplicity, I've combined the flow into a single "Register/Set Username" form.
+    function handleLogin(e) {
+        e.preventDefault();
+        // The anonymous user is already signed in. The only check needed is if they have a record/username.
+        // Since we check that in onAuthStateChanged, we can just reload the page or guide them.
+        setView('dashboard');
+    }
+
     async function handleLogout() {
         if (auth) {
             await signOut(auth);
             userRecords = null;
             userName = null;
+            // The onAuthStateChanged listener handles the view transition to 'auth'
             renderMessage("Successfully logged out. You can register a new username now.", 'secondary');
         }
     }
@@ -649,6 +692,7 @@
 
     window.handlePrevQuestion = () => {
         if (currentQuestionIndex > 0) {
+            // Save current selection before moving back
             const selectedOption = document.querySelector('input[name="answer"]:checked');
             if (selectedOption) {
                 currentQuizAnswers[currentQuestionIndex] = selectedOption.value;
@@ -661,6 +705,7 @@
     function handleQuizSubmit(e) {
         e.preventDefault();
         
+        // 1. Save answer for current question
         const selectedOption = document.querySelector('input[name="answer"]:checked');
         if (!selectedOption) {
             renderMessage("Please select an answer before proceeding.", 'danger');
@@ -671,9 +716,11 @@
         const totalQuestions = QUIZ_DATA[currentQuizCategory].length;
 
         if (currentQuestionIndex < totalQuestions - 1) {
+            // 2. Move to next question
             currentQuestionIndex++;
             setView('quiz');
         } else {
+            // 3. Final Submission
             let correctCount = 0;
             const quiz = QUIZ_DATA[currentQuizCategory];
             quiz.forEach((q, index) => {
@@ -682,8 +729,10 @@
                 }
             });
 
+            // Save the score to Firestore (async call)
             updateScoreRecord(currentQuizCategory, correctCount);
 
+            // Transition to results screen
             setView('results');
         }
     }
