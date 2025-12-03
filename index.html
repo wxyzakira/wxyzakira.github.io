@@ -20,14 +20,6 @@
             align-items: flex-start;
             min-height: 100vh;
             padding: 1rem;
-            transition: background-color 0.3s;
-        }
-        /* Global Dark Mode Backgrounds */
-        .dark {
-            color-scheme: dark;
-        }
-        .dark body {
-            background-color: #111827; /* Darker Gray for the overall page background */
         }
         .app-container {
             max-width: 600px;
@@ -37,11 +29,6 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-top: 1rem;
-            transition: background-color 0.3s, box-shadow 0.3s;
-        }
-        .dark .app-container {
-            background-color: #1f2937; /* Even darker gray for the main card */
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
         .button-primary {
             background-color: var(--primary-color);
@@ -89,19 +76,10 @@
             transition: all 0.2s;
             font-weight: 500;
         }
-        .dark .custom-radio label {
-            border: 2px solid #4b5563;
-            background-color: #374151; /* Dark background for unselected option */
-            color: #d1d5db; /* Light gray text */
-        }
         .custom-radio input[type="radio"]:checked + label {
             border-color: var(--primary-color);
             background-color: #eff6ff;
             box-shadow: 0 0 0 2px #bfdbfe;
-        }
-        .dark .custom-radio input[type="radio"]:checked + label {
-            background-color: #1e3a8a;
-            color: white;
         }
     </style>
 </head>
@@ -113,7 +91,7 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p class="mt-4 text-gray-600 dark:text-gray-300">Initializing database and authentication...</p>
+        <p class="mt-4 text-gray-600">Initializing database and authentication...</p>
     </div>
 
 </div>
@@ -340,9 +318,9 @@
     function renderMessage(message, type = 'primary') {
         const appDiv = document.getElementById('app');
         const messageId = `msg-${Date.now()}`;
-        const colorClass = type === 'danger' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' :
-                             type === 'secondary' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                             'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+        const colorClass = type === 'danger' ? 'bg-red-100 text-red-800' :
+                             type === 'secondary' ? 'bg-green-100 text-green-800' :
+                             'bg-blue-100 text-blue-800';
 
         const messageDiv = document.createElement('div');
         messageDiv.id = messageId;
@@ -375,7 +353,7 @@
         } else if (currentView === 'results') {
             contentDiv.innerHTML = renderResultsScreen();
         } else {
-            contentDiv.innerHTML = '<h2 class="text-xl text-center text-gray-700 dark:text-gray-300">Application Error</h2>';
+            contentDiv.innerHTML = '<h2 class="text-xl text-center text-gray-700">Application Error</h2>';
         }
 
         const existingContent = document.getElementById('content');
@@ -396,49 +374,6 @@
         } else if (currentView === 'quiz') {
             document.getElementById('quiz-form')?.addEventListener('submit', handleQuizSubmit);
         }
-        
-        document.querySelectorAll('.mode-toggle').forEach(btn => {
-            btn.removeEventListener('click', toggleDarkMode);
-            btn.addEventListener('click', toggleDarkMode);
-        });
-
-        checkDarkModePreference();
-    }
-
-    // --- DARK MODE LOGIC ---
-    function checkDarkModePreference() {
-        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.getElementById('body-main').classList.add('dark');
-        } else {
-            document.getElementById('body-main').classList.remove('dark');
-        }
-    }
-
-    function toggleDarkMode() {
-        const body = document.getElementById('body-main');
-        if (body.classList.contains('dark')) {
-            body.classList.remove('dark');
-            localStorage.theme = 'light';
-        } else {
-            body.classList.add('dark');
-            localStorage.theme = 'dark';
-        }
-        renderApp();
-    }
-    window.toggleDarkMode = toggleDarkMode;
-
-    function getModeToggleHTML() {
-        const isDark = document.getElementById('body-main')?.classList.contains('dark');
-        const icon = isDark ? `
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-        ` : `
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-        `;
-        return `
-            <button class="mode-toggle p-2 rounded-full text-gray-500 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400 focus:outline-none transition duration-150 ease-in-out" aria-label="Toggle Dark Mode">
-                ${icon}
-            </button>
-        `;
     }
 
     // --- SCREEN RENDERING FUNCTIONS ---
@@ -446,10 +381,9 @@
     function renderAuthScreen() {
         if (userName) {
             return `
-                <div class="flex justify-end">${getModeToggleHTML()}</div>
-                <div class="text-center p-4 dark:text-gray-100">
-                    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">Welcome Back!</h1>
-                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">You are currently signed in as <strong>${userName}</strong>.</p>
+                <div class="text-center p-4">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">Welcome Back!</h1>
+                    <p class="text-lg text-gray-600 mb-8">You are currently signed in as <strong>${userName}</strong>.</p>
                     <button id="logout-btn" class="button-danger w-full mt-4">Log Out / Switch User</button>
                     <button onclick="window.handleGoToDashboard()" class="button-primary w-full mt-2">Go to Dashboard</button>
                 </div>
@@ -457,19 +391,18 @@
         }
 
         return `
-            <div class="flex justify-end">${getModeToggleHTML()}</div>
-            <h1 class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 mb-6 text-center">Vocational Quiz Portal</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">Your private records are stored securely using your unique ID: <code class="bg-gray-100 dark:bg-gray-700 p-1 rounded">${userId || '...'}</code></p>
+            <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Vocational Quiz Portal</h1>
+            <p class="text-sm text-gray-500 mb-4 text-center">Your private records are stored securely using your unique ID: <code class="bg-gray-100 p-1 rounded">${userId || '...'}</code></p>
 
-            <div class="bg-gray-50 dark:bg-gray-700 p-6 rounded-2xl shadow-inner">
-                <h2 class="text-xl font-bold text-gray-700 dark:text-gray-100 mb-4">Register / Set Username</h2>
+            <div class="bg-gray-50 p-6 rounded-2xl shadow-inner">
+                <h2 class="text-xl font-bold text-gray-700 mb-4">Register / Set Username</h2>
                 <form id="register-form">
                     <div class="mb-4">
-                        <label for="reg-username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Choose a Username</label>
-                        <input type="text" id="reg-username" name="username" required minlength="3" placeholder="e.g., JohnDoe123" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-600 dark:text-white">
+                        <label for="reg-username" class="block text-sm font-medium text-gray-700 mb-1">Choose a Username</label>
+                        <input type="text" id="reg-username" name="username" required minlength="3" placeholder="e.g., JohnDoe123" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <button type="submit" class="button-primary w-full">Set Username and Enter Portal</button>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">Note: Since this app uses secure Firebase authentication, setting a username here links it to your unique anonymous ID, establishing your record.</p>
+                    <p class="text-xs text-gray-500 mt-2 text-center">Note: Since this app uses secure Firebase authentication, setting a username here links it to your unique anonymous ID, establishing your record.</p>
                 </form>
             </div>
         `;
@@ -480,18 +413,15 @@
         const categories = Object.keys(QUIZ_DATA);
 
         return `
-            <div class="flex justify-between items-center mb-6 border-b pb-4 dark:border-gray-600">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100">Welcome, ${userName}</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Your User ID: <code class="text-xs bg-gray-100 dark:bg-gray-700 p-1 rounded">${userId}</code></p>
+                    <h1 class="text-2xl font-bold text-gray-800">Welcome, ${userName}</h1>
+                    <p class="text-sm text-gray-500">Your User ID: <code class="text-xs bg-gray-100 p-1 rounded">${userId}</code></p>
                 </div>
-                <div class="flex items-center space-x-2">
-                    ${getModeToggleHTML()}
-                    <button id="logout-btn" class="button-danger text-sm">Logout</button>
-                </div>
+                <button id="logout-btn" class="button-danger text-sm">Logout</button>
             </div>
 
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Quiz Categories & High Scores</h2>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Quiz Categories & High Scores</h2>
 
             <div class="space-y-4">
                 ${categories.map(category => {
@@ -500,16 +430,16 @@
                     const percentage = maxScore > 0 ? ((score / maxScore) * 100).toFixed(0) : 0;
 
                     return `
-                        <div class="bg-white dark:bg-gray-700 p-5 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                        <div class="bg-white p-5 border border-gray-200 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <div class="mb-3 sm:mb-0">
-                                <h3 class="text-lg font-bold text-gray-700 dark:text-gray-100 capitalize">${category}</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">5 Questions | Max Score: ${maxScore}</p>
+                                <h3 class="text-lg font-bold text-gray-700 capitalize">${category}</h3>
+                                <p class="text-sm text-gray-500">5 Questions | Max Score: ${maxScore}</p>
                             </div>
                             <div class="flex items-center space-x-4">
                                 <div class="text-center">
-                                    <p class="text-xs font-semibold text-gray-400 dark:text-gray-300">HIGH SCORE</p>
+                                    <p class="text-xs font-semibold text-gray-400">HIGH SCORE</p>
                                     <p class="text-2xl font-extrabold ${score >= 4 ? 'text-green-600' : 'text-yellow-600'}">${score}/${maxScore}</p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">${percentage}%</p>
+                                    <p class="text-sm text-gray-500">${percentage}%</p>
                                 </div>
                                 <button data-category="${category}" class="quiz-start-btn button-secondary">
                                     Start Quiz
@@ -521,7 +451,7 @@
             </div>
             
             <div class="mt-8">
-                <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Recent Quiz History</h2>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Recent Quiz History</h2>
                 ${renderHistory(userRecords)}
             </div>
         `;
@@ -529,7 +459,7 @@
     
     function renderHistory(records) {
         if (!records || !records.history || records.history.length === 0) {
-            return '<p class="text-gray-500 dark:text-gray-400">No recent quiz attempts recorded.</p>';
+            return '<p class="text-gray-500">No recent quiz attempts recorded.</p>';
         }
 
         const recentHistory = records.history.slice(-5).reverse();
@@ -537,15 +467,15 @@
         return `
             <ul class="space-y-2 text-sm">
                 ${recentHistory.map(item => {
-                    const scoreClass = item.score / item.maxScore > 0.6 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+                    const scoreClass = item.score / item.maxScore > 0.6 ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
                     const time = new Date(item.timestamp).toLocaleString();
                     return `
-                        <li class="p-3 rounded-xl border border-gray-200 dark:border-gray-600 flex justify-between items-center bg-white dark:bg-gray-700">
-                            <span class="capitalize font-medium text-gray-700 dark:text-gray-100">${item.category}</span>
+                        <li class="p-3 rounded-xl border border-gray-200 flex justify-between items-center">
+                            <span class="capitalize font-medium text-gray-700">${item.category}</span>
                             <span class="${scoreClass} px-3 py-1 rounded-full font-bold">
                                 ${item.score}/${item.maxScore}
                             </span>
-                            <span class="text-xs text-gray-400 dark:text-gray-300">${time}</span>
+                            <span class="text-xs text-gray-400">${time}</span>
                         </li>
                     `;
                 }).join('')}
@@ -560,28 +490,28 @@
         const totalQuestions = quiz.length;
 
         if (!question) {
-            return `<p class="text-center text-red-500 dark:text-red-400">Quiz data missing for ${category}.</p>`;
+            return `<p class="text-center text-red-500">Quiz data missing for ${category}.</p>`;
         }
 
         return `
-            <div class="flex justify-between items-center mb-6 pb-4 border-b dark:border-gray-600">
-                <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-100 capitalize">${category} Quiz</h1>
+            <div class="flex justify-between items-center mb-6 pb-4 border-b">
+                <h1 class="text-2xl font-bold text-gray-800 capitalize">${category} Quiz</h1>
                 <p class="text-lg font-semibold text-blue-600">Q ${currentQuestionIndex + 1}/${totalQuestions}</p>
             </div>
 
             <form id="quiz-form">
-                <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-6">${question.q}</h3>
+                <h3 class="text-xl font-semibold text-gray-700 mb-6">${question.q}</h3>
 
                 <div class="space-y-3">
                     ${question.options.map((option, index) => `
                         <div class="custom-radio">
                             <input type="radio" id="option-${index}" name="answer" value="${option}" required ${currentQuizAnswers[currentQuestionIndex] === option ? 'checked' : ''}>
-                            <label for="option-${index}" class="text-gray-700 dark:text-gray-300">${option}</label>
+                            <label for="option-${index}" class="text-gray-700">${option}</label>
                         </div>
                     `).join('')}
                 </div>
 
-                <div class="flex justify-between items-center mt-8 pt-4 border-t dark:border-gray-600">
+                <div class="flex justify-between items-center mt-8 pt-4 border-t">
                     <button type="button" id="prev-btn" class="button-secondary ${currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}" ${currentQuestionIndex === 0 ? 'disabled' : ''} onclick="window.handlePrevQuestion()">
                         &larr; Previous
                     </button>
@@ -617,34 +547,31 @@
                               "Needs improvement. Study the materials and try again!";
 
         return `
-            <div class="flex justify-end">${getModeToggleHTML()}</div>
             <div class="text-center p-6">
-                <h1 class="text-3xl font-extrabold text-gray-800 dark:text-gray-100 mb-4">Quiz Complete!</h1>
-                <p class="text-xl font-medium text-gray-600 dark:text-gray-300 capitalize mb-8">${category} Results</p>
+                <h1 class="text-3xl font-extrabold text-gray-800 mb-4">Quiz Complete!</h1>
+                <p class="text-xl font-medium text-gray-600 capitalize mb-8">${category} Results</p>
 
-                <div class="bg-blue-50 dark:bg-blue-900 p-6 rounded-2xl inline-block shadow-inner mb-8">
-                    <p class="text-6xl font-black text-blue-600 dark:text-blue-300">${correctCount}/${maxScore}</p>
-                    <p class="text-xl font-bold text-gray-700 dark:text-gray-100 mt-2">${scorePercentage.toFixed(0)}%</p>
+                <div class="bg-blue-50 p-6 rounded-2xl inline-block shadow-inner mb-8">
+                    <p class="text-6xl font-black text-blue-600">${correctCount}/${maxScore}</p>
+                    <p class="text-xl font-bold text-gray-700 mt-2">${scorePercentage.toFixed(0)}%</p>
                 </div>
 
                 <p class="text-lg font-semibold ${scorePercentage >= 80 ? 'text-green-600' : 'text-yellow-600'} mb-6">${resultMessage}</p>
 
-                <div class="space-y-3 text-left border-t pt-4 dark:border-gray-600">
-                    <h2 class="text-lg font-bold text-gray-700 dark:text-gray-100 mb-3">Review Answers</h2>
+                <div class="space-y-3 text-left border-t pt-4">
+                    <h2 class="text-lg font-bold text-gray-700 mb-3">Review Answers</h2>
                     ${quiz.map((q, index) => {
                         const userAnswer = currentQuizAnswers[index] || 'No Answer';
                         const isCorrect = userAnswer === q.a;
                         const icon = isCorrect ? '✅' : '❌';
                         const color = isCorrect ? 'text-green-600' : 'text-red-600';
-                        const bgColor = isCorrect ? 'bg-green-50 dark:bg-green-900' : 'bg-red-50 dark:bg-red-900';
-                        const borderColor = isCorrect ? 'border-gray-200 dark:border-green-800' : 'border-gray-200 dark:border-red-800';
-                        const textColor = isCorrect ? 'dark:text-green-200' : 'dark:text-red-200';
+                        const bgColor = isCorrect ? 'bg-green-50' : 'bg-red-50';
 
                         return `
-                            <div class="p-4 rounded-xl ${bgColor} border ${borderColor}">
-                                <p class="font-bold text-gray-800 dark:text-gray-100 mb-1">${icon} Q${index + 1}: ${q.q}</p>
-                                <p class="text-sm ${color} ${textColor}">Your Answer: ${userAnswer}</p>
-                                ${!isCorrect ? `<p class="text-sm text-gray-700 dark:text-gray-300">Correct Answer: ${q.a}</p>` : ''}
+                            <div class="p-4 rounded-xl ${bgColor} border border-gray-200">
+                                <p class="font-bold text-gray-800 mb-1">${icon} Q${index + 1}: ${q.q}</p>
+                                <p class="text-sm ${color}">Your Answer: ${userAnswer}</p>
+                                ${!isCorrect ? `<p class="text-sm text-gray-700">Correct Answer: ${q.a}</p>` : ''}
                             </div>
                         `;
                     }).join('')}
