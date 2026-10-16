@@ -38,14 +38,26 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .results button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 12px}
 .results button:hover,.results button:focus-visible{background:var(--pcb-soft)}
 .results small{display:block;color:var(--muted)}
-.theme{border:1px solid var(--line);background:none;border-radius:6px;padding:8px 12px}
+.theme{border:1px solid var(--line);background:none;border-radius:6px;width:40px;height:40px;display:grid;place-items:center;padding:0;color:var(--ink)}
+.theme:hover{border-color:var(--pcb);background:var(--pcb-soft)}
 
 .shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0 40px;max-width:1180px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
 nav.rail{position:sticky;top:calc(64px + env(safe-area-inset-top,0px));align-self:start;padding:24px 0;display:flex;flex-direction:column;gap:2px}
 nav.rail a{padding:7px 10px;border-left:3px solid var(--line);text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
 nav.rail a:hover,nav.rail a.on{color:var(--ink);border-color:var(--pcb);background:var(--pcb-soft)}
 main{min-width:0}
-section{padding:48px 0 8px;scroll-margin-top:80px}
+section{padding:32px 0 8px;scroll-margin-top:80px;display:none}
+section.active{display:block}
+.hero{display:none}
+.hero.active{display:block}
+.back{display:inline-flex;gap:6px;align-items:center;margin-bottom:20px;padding:7px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);text-decoration:none;font-weight:500;font-size:.92rem}
+.back:hover{border-color:var(--pcb);background:var(--pcb-soft)}
+.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:36px}
+.index a{display:grid;gap:4px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);text-decoration:none;color:var(--ink)}
+.index a:hover,.index a:focus-visible{border-color:var(--pcb);background:var(--pcb-soft)}
+.index b{font:700 1.15rem var(--f-display)}
+.index span{color:var(--muted);font-size:.92rem}
+.index small{font:500 .72rem var(--f-mono);color:var(--pcb);text-transform:uppercase;letter-spacing:.1em}
 section>.eyebrow{margin-bottom:8px}
 section>p.lead{margin-top:12px;max-width:65ch;color:var(--muted)}
 .hero{padding:40px 0 8px}
@@ -171,12 +183,13 @@ footer{margin-top:64px;padding:24px 0 48px;border-top:1px solid var(--line);colo
       <input id="q" type="search" placeholder="Search topics, symptoms, terms (e.g. no display, beep, RAM)" autocomplete="off" aria-label="Search EduFix">
       <div class="results" id="results" hidden></div>
     </div>
-    <button class="theme" id="theme" aria-label="Toggle light or dark theme">Theme</button>
+    <button class="theme" id="theme" aria-label="Toggle light or dark theme" title="Light / dark mode"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
   </div>
 </header>
 
 <div class="shell" id="top">
 <nav class="rail" aria-label="Chapters">
+  <a href="#home">Home</a>
   <a href="#safety">Safety first</a>
   <a href="#parts">Know the parts</a>
   <a href="#fix">Troubleshoot</a>
@@ -191,7 +204,7 @@ footer{margin-top:64px;padding:24px 0 48px;border-top:1px solid var(--line);colo
 </nav>
 
 <main>
-<div class="hero">
+<div class="hero active" id="home">
   <p class="eyebrow">Computer hardware troubleshooting guide</p>
   <h1>Find the fault. <em>Fix it in order.</em></h1>
   <p>EduFix is a step-by-step guide for first-year students learning to diagnose basic computer hardware problems. Pick a symptom, follow the steps, and check your understanding with the quiz. It supports your lab sessions and does not replace your instructor.</p>
@@ -208,6 +221,8 @@ footer{margin-top:64px;padding:24px 0 48px;border-top:1px solid var(--line);colo
     <a class="pill" href="#fix" data-go="ram">Beeping at startup</a>
     <a class="pill" href="#fix" data-go="heat">Overheating</a>
   </div>
+  <h2 style="margin-top:44px;font-size:1.6rem">Explore EduFix</h2>
+  <div class="index" id="index"></div>
 </div>
 
 <section id="safety">
@@ -549,15 +564,28 @@ q.oninput=function(){
   var hits=IDX.filter(function(i){return (i.t+' '+i.k).toLowerCase().indexOf(v)>-1}).slice(0,8);
   rs.hidden=false;
   rs.innerHTML=hits.length?hits.map(function(h,n){return '<button data-n="'+n+'"><b>'+esc(h.t)+'</b><small>'+esc(h.s)+'</small></button>'}).join(''):'<div style="padding:12px">No results. Try a symptom like “no display” or a part like “RAM”.</div>';
-  $$('button',rs).forEach(function(b){b.onclick=function(){var h=hits[+b.dataset.n];h.go();rs.hidden=true;q.value='';var el=document.getElementById(h.a);if(el)el.scrollIntoView({behavior:'smooth'})}});
+  $$('button',rs).forEach(function(b){b.onclick=function(){var h=hits[+b.dataset.n];h.go();rs.hidden=true;q.value='';window.__show(h.a)}});
 };
 document.addEventListener('click',function(e){if(!e.target.closest('.search'))rs.hidden=true});
 q.addEventListener('keydown',function(e){if(e.key==='Escape')rs.hidden=true});
 
-/* rail highlight */
+/* separate pages: index + one part at a time */
+var PAGES=[['safety','Safety first','Power-down, ESD and opening a unit safely','Part 1'],['parts','Know the parts','Clickable board diagram of each component','Part 2'],['fix','Troubleshoot','Step-by-step fixes for 8 common problems','Part 3'],['beeps','Beep codes','What POST beep patterns mean','Part 4'],['tools','Tools','Hand tools and diagnostic software','Part 5'],['maintenance','Maintenance','Preventive cleaning and care','Part 6'],['videos','Video demos','Demonstration videos','Part 7'],['quiz','Self-check quiz','10 practice questions with explanations','Part 8'],['checklists','Checklists','Tick-off and copyable quick references','Part 9'],['glossary','Glossary','Searchable technical terms','Part 10'],['faq','FAQ','Answers to common questions','Part 11']];
+$('#index').innerHTML=PAGES.map(function(p){return '<a href="#'+p[0]+'"><small>'+p[3]+'</small><b>'+esc(p[1])+'</b><span>'+esc(p[2])+'</span></a>'}).join('');
+$$('section').forEach(function(s){var a=document.createElement('a');a.className='back';a.href='#home';a.textContent='← All topics';s.insertBefore(a,s.firstChild)});
 var links=$$('nav.rail a');
-function spy(){var y=window.scrollY+120,on=null;links.forEach(function(a){var s=document.querySelector(a.getAttribute('href'));if(s&&s.offsetTop<=y)on=a});links.forEach(function(a){a.classList.toggle('on',a===on)})}
-window.addEventListener('scroll',spy,{passive:true});spy();
+function show(id){
+  if(!document.getElementById(id)||!(id==='home'||PAGES.some(function(p){return p[0]===id})))id='home';
+  $$('section').forEach(function(s){s.classList.toggle('active',s.id===id)});
+  $('#home').classList.toggle('active',id==='home');
+  links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+id)});
+  try{if(location.hash!=='#'+id)history.replaceState(null,'','#'+id)}catch(e){}
+  window.scrollTo(0,0);
+}
+window.__show=show;
+document.addEventListener('click',function(e){var a=e.target.closest('a[href^="#"]');if(!a||a.classList.contains('brand')&&false)return;var id=a.getAttribute('href').slice(1);if(id==='top')id='home';e.preventDefault();show(id)});
+window.addEventListener('hashchange',function(){show(location.hash.slice(1)||'home')});
+show(location.hash.slice(1)||'home');
 })();
 </script>
 
