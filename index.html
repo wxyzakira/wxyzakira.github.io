@@ -1,592 +1,500 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>EduFix</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@85..100,600..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: service-manual shell. Sticky top bar with search, left chapter rail on desktop, single column on phones. */
+/* Layout: sticky top bar, single content column (max 1080px), views swap in place like a small app. Bench-manual feel: copper accent on cool board-grey. */
 :root{
-  --bg:#eef1ee; --surface:#fbfcfb; --ink:#14201b; --muted:#52615a; --line:#cfd8d2;
-  --pcb:#0f6b4f; --pcb-ink:#ffffff; --pcb-soft:#dcece4; --warn:#a85e00; --warn-soft:#f8e8cf; --bad:#a82f25; --bad-soft:#f6dcd8; --ok:#17713a;
-  --f-display:'Archivo','Arial Narrow',system-ui,sans-serif; --f-body:'IBM Plex Sans',system-ui,sans-serif; --f-mono:'IBM Plex Mono',ui-monospace,monospace;
+  --bg:#eef1ee; --surface:#fbfcfb; --ink:#17201c; --muted:#59665f; --line:#cfd8d2;
+  --accent:#a8480f; --accent-ink:#ffffff; --accent-soft:#f6e4d6; --board:#1f4a3c; --board-ink:#e8f3ee;
+  --ok:#1d6b3a; --warn:#8a5a00; --bad:#a3262a;
+  --display:'Familjen Grotesk',system-ui,sans-serif; --body:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1714; --surface:#16211c; --ink:#e6eee9; --muted:#9db0a6; --line:#2a3a33;
-  --pcb:#4fc79a; --pcb-ink:#07251a; --pcb-soft:#173328; --warn:#e8a24a; --warn-soft:#3a2b12; --bad:#ef7d70; --bad-soft:#3b1b17; --ok:#62d18c; color-scheme:dark}}
+  --bg:#101714; --surface:#17201c; --ink:#e6eee9; --muted:#9aa9a1; --line:#2b3a33;
+  --accent:#e58a4d; --accent-ink:#1a0e05; --accent-soft:#3a2518; --board:#0c2a21; --board-ink:#d6eadf;
+  --ok:#5fc084; --warn:#e0b04a; --bad:#f08486; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1714; --surface:#16211c; --ink:#e6eee9; --muted:#9db0a6; --line:#2a3a33;
-  --pcb:#4fc79a; --pcb-ink:#07251a; --pcb-soft:#173328; --warn:#e8a24a; --warn-soft:#3a2b12; --bad:#ef7d70; --bad-soft:#3b1b17; --ok:#62d18c; color-scheme:dark}
+  --bg:#101714; --surface:#17201c; --ink:#e6eee9; --muted:#9aa9a1; --line:#2b3a33;
+  --accent:#e58a4d; --accent-ink:#1a0e05; --accent-soft:#3a2518; --board:#0c2a21; --board-ink:#d6eadf;
+  --ok:#5fc084; --warn:#e0b04a; --bad:#f08486; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--f-body);padding-inline:0}
-h1,h2,h3{font-family:var(--f-display);line-height:1.1;margin:0;text-wrap:balance;font-stretch:90%}
-h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:800;letter-spacing:-.01em}
-h3{font-size:1.2rem;font-weight:700}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.02em}
+h2{font-size:1.6rem;letter-spacing:-.01em} h3{font-size:1.1rem}
 p{margin:0}
-a{color:var(--pcb)}
+a{color:var(--accent)}
 button{font:inherit;color:inherit;cursor:pointer}
-:focus-visible{outline:3px solid var(--pcb);outline-offset:2px}
-.mono{font-family:var(--f-mono)}
-.eyebrow{font:500 .75rem var(--f-mono);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
-
-header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
-.bar{display:flex;gap:12px;align-items:center;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));flex-wrap:wrap}
-.brand{font:800 1.5rem var(--f-display);font-stretch:85%;letter-spacing:-.02em;margin-right:auto;text-decoration:none;color:var(--ink)}
-.brand span{color:var(--pcb)}
-.search{position:relative;flex:1 1 260px;max-width:460px}
-.search input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
-.results{position:absolute;left:0;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--line);border-radius:6px;max-height:60vh;overflow:auto;box-shadow:0 8px 24px #0003;z-index:40}
-.results button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 12px}
-.results button:hover,.results button:focus-visible{background:var(--pcb-soft)}
-.results small{display:block;color:var(--muted)}
-.theme{border:1px solid var(--line);background:none;border-radius:6px;width:40px;height:40px;display:grid;place-items:center;padding:0;color:var(--ink)}
-.theme:hover{border-color:var(--pcb);background:var(--pcb-soft)}
-
-.shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:0 40px;max-width:1180px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
-nav.rail{position:sticky;top:calc(64px + env(safe-area-inset-top,0px));align-self:start;padding:24px 0;display:flex;flex-direction:column;gap:2px}
-nav.rail a{padding:7px 10px;border-left:3px solid var(--line);text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
-nav.rail a:hover,nav.rail a.on{color:var(--ink);border-color:var(--pcb);background:var(--pcb-soft)}
-main{min-width:0}
-section{padding:32px 0 8px;scroll-margin-top:80px;display:none}
-section.active{display:block}
-.hero{display:none}
-.hero.active{display:block}
-.back{display:inline-flex;gap:6px;align-items:center;margin-bottom:20px;padding:7px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);text-decoration:none;font-weight:500;font-size:.92rem}
-.back:hover{border-color:var(--pcb);background:var(--pcb-soft)}
-.index{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:36px}
-.index a{display:grid;gap:4px;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);text-decoration:none;color:var(--ink)}
-.index a:hover,.index a:focus-visible{border-color:var(--pcb);background:var(--pcb-soft)}
-.index b{font:700 1.15rem var(--f-display)}
-.index span{color:var(--muted);font-size:.92rem}
-.index small{font:500 .72rem var(--f-mono);color:var(--pcb);text-transform:uppercase;letter-spacing:.1em}
-section>.eyebrow{margin-bottom:8px}
-section>p.lead{margin-top:12px;max-width:65ch;color:var(--muted)}
-.hero{padding:40px 0 8px}
-.hero h1{font-size:clamp(2.4rem,7vw,4.4rem);font-weight:800;letter-spacing:-.03em}
-.hero h1 em{font-style:normal;color:var(--pcb)}
-.hero p{max-width:60ch;margin-top:16px;font-size:1.1rem}
-.method{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:28px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
-.method div{padding:14px 16px;border-right:1px solid var(--line)}
-.method div:last-child{border-right:0}
-.method b{display:block;font:700 1.05rem var(--f-display)}
-.method span{color:var(--muted);font-size:.9rem}
-.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
-.pill{padding:8px 14px;border:1px solid var(--line);border-radius:99px;background:var(--surface);text-decoration:none;color:var(--ink);font-weight:500;font-size:.92rem}
-.pill:hover{border-color:var(--pcb);background:var(--pcb-soft)}
-
-.callout{border:1px solid var(--warn);background:var(--warn-soft);border-radius:8px;padding:16px 18px;margin-top:20px}
-.callout h3{color:var(--warn);margin-bottom:6px;font-size:1rem;text-transform:uppercase;letter-spacing:.06em}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:20px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px}
-.card h3{margin-bottom:6px}
-.card p{color:var(--muted);font-size:.95rem}
-ol.safety{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:s}
-ol.safety li{counter-increment:s;display:grid;grid-template-columns:36px 1fr;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
-ol.safety li::before{content:counter(s);font:700 1.1rem var(--f-mono);color:var(--pcb);align-self:start}
-
-.board{margin-top:20px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:start}
-.board svg{width:100%;height:auto;background:var(--pcb-soft);border:1px solid var(--line);border-radius:8px}
-.part{cursor:pointer}
-.part rect,.part circle{fill:var(--surface);stroke:var(--pcb);stroke-width:2}
-.part text{fill:var(--ink);font:600 12px var(--f-mono);pointer-events:none}
-.part:hover rect,.part.on rect,.part.on circle,.part:focus rect{fill:var(--pcb);}
-.part.on text,.part:hover text,.part:focus text{fill:var(--pcb-ink)}
-.part:focus{outline:none}
-.trace{stroke:var(--pcb);stroke-width:2;fill:none;opacity:.45}
-.partinfo{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px;min-height:220px}
-.partinfo dl{margin:12px 0 0;display:grid;gap:8px}
-.partinfo dt{font:500 .72rem var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-.partinfo dd{margin:0}
-
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}
-.tab{padding:9px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-weight:500}
-.tab[aria-selected="true"]{background:var(--pcb);border-color:var(--pcb);color:var(--pcb-ink)}
-.flow{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px}
-.flow header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline;margin-bottom:12px}
-.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
-.progress i{display:block;height:100%;background:var(--pcb);width:0;transition:width .25s}
-.step{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid var(--line)}
-.step input{width:20px;height:20px;accent-color:var(--pcb);margin-top:3px}
-.step label{cursor:pointer;display:block}
-.step b{display:block}
-.step span{color:var(--muted);font-size:.95rem}
-.step input:checked+label b{text-decoration:line-through;color:var(--muted)}
-.step .tag{display:inline-block;font:500 .7rem var(--f-mono);padding:1px 6px;border-radius:3px;background:var(--bad-soft);color:var(--bad);margin-left:6px;text-transform:uppercase}
-.escalate{margin-top:12px;padding:12px 14px;border-left:4px solid var(--warn);background:var(--warn-soft);border-radius:0 6px 6px 0;font-size:.95rem}
-.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.btn{padding:9px 16px;border-radius:6px;border:1px solid var(--pcb);background:var(--pcb);color:var(--pcb-ink);font-weight:600}
-.btn.ghost{background:none;color:var(--pcb)}
-.method-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:20px}
-.method-strip span{flex:1 1 140px;padding:10px 12px;background:var(--pcb-soft);border-radius:6px;font-weight:600;font-size:.92rem}
-.method-strip small{display:block;font:400 .75rem var(--f-mono);color:var(--muted)}
-
-.tablewrap{overflow-x:auto;margin-top:16px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-table{border-collapse:collapse;width:100%;min-width:520px}
-th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-th{font:500 .75rem var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
-tr:last-child td{border-bottom:0}
-td.mono{white-space:nowrap}
-.note{margin-top:10px;color:var(--muted);font-size:.9rem}
-
-.vids{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:20px}
-.vid{border:1px dashed var(--line);border-radius:8px;padding:14px;background:var(--surface)}
-.vid .screen{aspect-ratio:16/9;max-width:100%;background:var(--pcb-soft);border-radius:6px;display:grid;place-items:center;margin-bottom:10px}
-.vid .screen svg{width:44px;height:44px;fill:var(--pcb)}
-.vid small{color:var(--muted)}
-
-.gl-tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-.gl-tools input{flex:1 1 240px;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);font:inherit}
-dl.gloss{margin:16px 0 0;display:grid;gap:0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-dl.gloss div{padding:12px 16px;border-bottom:1px solid var(--line)}
-dl.gloss div:last-child{border:0}
-dl.gloss dt{font:600 .95rem var(--f-mono);color:var(--pcb)}
-dl.gloss dd{margin:2px 0 0}
-
-.quiz{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px}
-.quiz .q{font:700 1.25rem/1.3 var(--f-display);margin:8px 0 14px}
-.opts{display:grid;gap:8px}
-.opt{text-align:left;padding:11px 14px;border:1px solid var(--line);border-radius:6px;background:var(--bg);display:grid;grid-template-columns:28px 1fr;gap:6px}
-.opt b{font-family:var(--f-mono);color:var(--muted)}
-.opt:hover:not(:disabled){border-color:var(--pcb)}
-.opt.right{background:var(--pcb-soft);border-color:var(--ok)}
-.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
-.why{margin-top:14px;padding:12px 14px;background:var(--pcb-soft);border-radius:6px}
-.score{font:800 3rem var(--f-display);color:var(--pcb)}
-
-.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:20px}
-.checks .card ul{list-style:none;margin:10px 0;padding:0;display:grid;gap:6px}
-.checks label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
-.checks input{accent-color:var(--pcb);margin-top:5px}
-details{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:0}
-details+details{margin-top:8px}
-summary{padding:14px 16px;font-weight:600;cursor:pointer}
-details p{padding:0 16px 14px;color:var(--muted)}
-.faq{margin-top:20px}
-footer{margin-top:64px;padding:24px 0 48px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem;max-width:70ch}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;z-index:50}
-
-@media (max-width:860px){
-  .shell{grid-template-columns:minmax(0,1fr)}
-  nav.rail{position:static;flex-direction:row;overflow-x:auto;padding:12px 0 0;gap:6px}
-  nav.rail a{border-left:0;border:1px solid var(--line);border-radius:99px;white-space:nowrap;padding:6px 12px}
-  .board{grid-template-columns:minmax(0,1fr)}
-  .method{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .method div:nth-child(2){border-right:0}
-  .method div:nth-child(-n+2){border-bottom:1px solid var(--line)}
-}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--mono)}
+.eyebrow{font:500 .75rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+/* top bar */
+header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line);margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.bar .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font:700 1.35rem var(--display);background:none;border:0;padding:0;display:flex;align-items:center;gap:8px;letter-spacing:-.02em}
+.logo i{width:26px;height:26px;background:var(--board);border-radius:3px;position:relative;display:inline-block}
+.logo i::after{content:"";position:absolute;inset:6px;border:2px solid var(--accent);border-radius:50% 50% 50% 0}
+nav{display:flex;gap:2px;flex-wrap:wrap;flex:1}
+nav button{background:none;border:0;padding:6px 10px;border-radius:6px;color:var(--muted);font-weight:500;font-size:.92rem}
+nav button:hover{color:var(--ink);background:var(--line)}
+nav button[aria-current=page]{color:var(--ink);box-shadow:inset 0 -2px var(--accent);border-radius:6px 6px 0 0}
+.tools{display:flex;gap:8px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px;font-size:.88rem;display:inline-flex;gap:8px;align-items:center}
+kbd{font:500 .72rem var(--mono);border:1px solid var(--line);border-radius:4px;padding:0 5px;color:var(--muted)}
+main{padding-block:32px 64px;min-height:70vh}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:12px 18px;font-weight:600;display:inline-flex;gap:8px;align-items:center;text-decoration:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.sm{padding:8px 12px;font-size:.9rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.stack{display:grid;gap:16px}
+.pill{font:500 .72rem var(--mono);border:1px solid var(--line);border-radius:99px;padding:2px 9px;color:var(--muted);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:var(--ok)} .pill.warn{color:var(--warn);border-color:var(--warn)} .pill.bad{color:var(--bad);border-color:var(--bad)}
+/* hero */
+.hero{background:var(--board);color:var(--board-ink);border-radius:14px;padding:clamp(24px,5vw,52px);display:grid;gap:20px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:
+ linear-gradient(var(--board-ink),var(--board-ink)) 0 0/0 0,
+ repeating-linear-gradient(90deg,transparent 0 38px,rgba(232,243,238,.05) 38px 39px),
+ repeating-linear-gradient(0deg,transparent 0 38px,rgba(232,243,238,.05) 38px 39px);pointer-events:none}
+.hero>*{position:relative}
+.hero p{max-width:56ch;font-size:1.1rem;opacity:.9}
+.hero .btn.ghost{color:var(--board-ink);border-color:var(--board-ink)}
+.hero .eyebrow{color:#9fc4b4}
+.search{display:flex;gap:8px;background:var(--surface);color:var(--ink);border-radius:10px;padding:6px 6px 6px 14px;align-items:center;max-width:520px;width:100%;border:0;text-align:left}
+.search span{color:var(--muted);flex:1}
+.topic-card{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:8px;align-content:start}
+.topic-card:hover{border-color:var(--accent)}
+.topic-card svg{width:34px;height:34px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.topic-card .meta{display:flex;gap:6px;flex-wrap:wrap}
+.strip{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--accent-soft);border-radius:10px;padding:12px 16px}
+.how{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.how div{border-top:2px solid var(--ink);padding-top:10px}
+.how b{font-family:var(--display);font-size:1.05rem}
+/* wizard */
+.progress{height:6px;background:var(--line);border-radius:9px;overflow:hidden}
+.progress>div{height:100%;background:var(--accent);transition:width .25s}
+@media (prefers-reduced-motion:reduce){.progress>div{transition:none}}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:16px 18px;font-weight:500;font-size:1.05rem;min-height:56px}
+.opt:hover{border-color:var(--accent)}
+details{border-bottom:1px solid var(--line);padding:12px 0}
+summary{cursor:pointer;font-weight:600}
+details p{margin-top:8px;color:var(--muted)}
+.steps{counter-reset:s;display:grid;gap:10px;padding:0;margin:0;list-style:none}
+.steps li{counter-increment:s;display:flex;gap:12px}
+.steps li::before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font:600 .85rem var(--mono)}
+.ivtv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ivtv label{border:1px solid var(--line);border-radius:8px;padding:8px;display:flex;gap:6px;align-items:center;font-size:.85rem;background:var(--surface)}
+@media(max-width:520px){.ivtv{grid-template-columns:1fr 1fr}}
+/* topic */
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:32px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}}
+.toc{position:sticky;top:90px;align-self:start;display:grid;gap:6px;font-size:.9rem}
+.toc a{color:var(--muted);text-decoration:none}.toc a:hover{color:var(--accent)}
+@media(max-width:800px){.toc{position:static}}
+.crumbs{font-size:.88rem;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+.crumbs button{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline}
+.sec{display:grid;gap:12px;margin-top:32px}
+ul.plain{margin:0;padding-left:20px;display:grid;gap:4px}
+.stepper{border:1.5px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--surface)}
+.stepper .head{display:flex;justify-content:space-between;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.stepper .body{padding:18px;display:grid;gap:14px}
+.why{background:var(--accent-soft);border-radius:8px;padding:10px 14px;font-size:.92rem}
+.stepper .foot{display:flex;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--line);gap:8px}
+.tip{border-bottom:1.5px dotted var(--accent);cursor:help;position:relative}
+.tip::after{content:attr(data-def);position:absolute;left:0;top:125%;width:min(260px,70vw);background:var(--ink);color:var(--bg);font:400 .82rem/1.4 var(--body);padding:8px 10px;border-radius:6px;opacity:0;pointer-events:none;z-index:5;transition:opacity .12s}
+.tip:hover::after,.tip:focus::after{opacity:1}
+.nav2{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:32px}
+/* quiz */
+.qopt{display:block;width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:8px}
+.qopt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
+.qopt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,var(--surface))}
+.score{font:700 3.2rem var(--display)}
+/* diagram */
+.diag{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px}
+@media(max-width:800px){.diag{grid-template-columns:1fr}}
+svg.board{width:100%;height:auto;background:var(--board);border-radius:12px}
+svg.board .hs{cursor:pointer}
+svg.board .hs rect,svg.board .hs circle{fill:rgba(232,243,238,.1);stroke:#9fc4b4;stroke-width:1.5}
+svg.board .hs:hover rect,svg.board .hs:focus rect,svg.board .hs.on rect,svg.board .hs.on circle,svg.board .hs:hover circle{fill:var(--accent);stroke:#fff}
+svg.board text{fill:#e8f3ee;font:500 11px var(--mono);pointer-events:none}
+/* beep */
+select,input[type=search],input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.beeps{display:flex;gap:5px;align-items:center}
+.beeps i{display:inline-block;height:12px;border-radius:6px;background:var(--accent)}
+.beeps .s{width:12px}.beeps .l{width:34px}
+table{border-collapse:collapse;width:100%}
+td,th{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}
+.scroll{overflow-x:auto}
+/* palette */
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:0;width:min(560px,calc(100vw - 32px));margin-top:12vh}
+dialog::backdrop{background:rgba(5,12,9,.55)}
+.pal-list{max-height:50vh;overflow:auto;display:grid}
+.pal-list button{background:none;border:0;border-top:1px solid var(--line);text-align:left;padding:10px 16px;display:flex;justify-content:space-between;gap:10px}
+.pal-list button:hover,.pal-list button:focus{background:var(--accent-soft)}
+.pal-list span{color:var(--muted);font-size:.85rem}
+.consent{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;max-width:620px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:16px;display:grid;gap:10px}
+.consent a{color:inherit}
+footer{border-top:1px solid var(--line);padding-block:24px 40px;color:var(--muted);font-size:.88rem}
 </style>
 
-<header class="top">
-  <div class="bar">
-    <a class="brand" href="#top">Edu<span>Fix</span></a>
-    <div class="search">
-      <input id="q" type="search" placeholder="Search topics, symptoms, terms (e.g. no display, beep, RAM)" autocomplete="off" aria-label="Search EduFix">
-      <div class="results" id="results" hidden></div>
-    </div>
-    <button class="theme" id="theme" aria-label="Toggle light or dark theme" title="Light / dark mode"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg></button>
+<header class="bar"><div class="wrap">
+  <button class="logo" data-go="home" aria-label="EduFix home"><i></i>EduFix</button>
+  <nav id="nav" aria-label="Main"></nav>
+  <div class="tools">
+    <button class="chip" id="searchBtn" aria-label="Search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><span>Search</span><kbd>Ctrl K</kbd></button>
+    <button class="chip" id="themeBtn" aria-label="Toggle light or dark mode">Theme</button>
   </div>
-</header>
+</div></header>
 
-<div class="shell" id="top">
-<nav class="rail" aria-label="Chapters">
-  <a href="#home">Home</a>
-  <a href="#safety">Safety first</a>
-  <a href="#parts">Know the parts</a>
-  <a href="#fix">Troubleshoot</a>
-  <a href="#beeps">Beep codes</a>
-  <a href="#tools">Tools</a>
-  <a href="#maintenance">Maintenance</a>
-  <a href="#videos">Video demos</a>
-  <a href="#quiz">Self-check quiz</a>
-  <a href="#checklists">Checklists</a>
-  <a href="#glossary">Glossary</a>
-  <a href="#faq">FAQ</a>
-</nav>
+<main><div class="wrap" id="view"></div></main>
+<footer><div class="wrap">EduFix is a supplementary learning resource for first-year MMSU-CTE students. It is not an intelligent tutoring system and does not replace your instructor.</div></footer>
 
-<main>
-<div class="hero active" id="home">
-  <p class="eyebrow">Computer hardware troubleshooting guide</p>
-  <h1>Find the fault. <em>Fix it in order.</em></h1>
-  <p>EduFix is a step-by-step guide for first-year students learning to diagnose basic computer hardware problems. Pick a symptom, follow the steps, and check your understanding with the quiz. It supports your lab sessions and does not replace your instructor.</p>
-  <div class="method" aria-label="The four-step troubleshooting method">
-    <div><b>1 Identify</b><span>What exactly is the symptom?</span></div>
-    <div><b>2 Isolate</b><span>Narrow down the possible causes.</span></div>
-    <div><b>3 Test</b><span>Try one fix at a time.</span></div>
-    <div><b>4 Verify</b><span>Confirm the unit works.</span></div>
-  </div>
-  <div class="pills">
-    <a class="pill" href="#fix" data-go="power">Won't turn on</a>
-    <a class="pill" href="#fix" data-go="display">No display</a>
-    <a class="pill" href="#fix" data-go="boot">Won't boot</a>
-    <a class="pill" href="#fix" data-go="ram">Beeping at startup</a>
-    <a class="pill" href="#fix" data-go="heat">Overheating</a>
-  </div>
-  <h2 style="margin-top:44px;font-size:1.6rem">Explore EduFix</h2>
-  <div class="index" id="index"></div>
-</div>
-
-<section id="safety">
-  <p class="eyebrow">Before you touch anything</p>
-  <h2>Safety first</h2>
-  <p class="lead">Most beginner damage comes from static electricity and from working on a unit that is still connected to power. Follow these steps every time.</p>
-  <div class="callout"><h3>Never skip</h3><p>Shut down, unplug the power cable from the wall or unit, then hold the power button for about 5 seconds to drain leftover charge. Only then open the case.</p></div>
-  <ol class="safety">
-    <li><div><b>Power down and unplug.</b> Switch off the PSU switch if there is one, and remove the power cable.</div></li>
-    <li><div><b>Control static (ESD).</b> Wear an anti-static wrist strap clipped to bare metal on the chassis. Without one, touch bare metal on the case before handling parts.</div></li>
-    <li><div><b>Hold parts by their edges.</b> Never touch chips, gold contacts or circuit traces. Keep parts in anti-static bags until needed.</div></li>
-    <li><div><b>Work on a clear, dry, non-carpeted surface.</b> Keep liquids away and keep screws in a small tray.</div></li>
-    <li><div><b>Do not open the power supply.</b> It can hold a dangerous charge even when unplugged. Replace the whole PSU instead.</div></li>
-    <li><div><b>Photograph cable positions before removing them.</b> It makes reassembly much easier.</div></li>
-  </ol>
-
-  <h3 style="margin-top:32px">Opening and inspecting a unit</h3>
-  <ol class="safety" style="margin-top:12px">
-    <li><div>Place the case on its side with the removable panel facing up.</div></li>
-    <li><div>Remove the thumbscrews or screws on the rear edge and slide the panel back.</div></li>
-    <li><div>Look first. Check for dust, loose cables, bulging capacitors, burn marks or a fan that is not spinning.</div></li>
-    <li><div>Note anything unusual before you change anything.</div></li>
-  </ol>
-</section>
-
-<section id="parts">
-  <p class="eyebrow">Components and their functions</p>
-  <h2>Know the parts</h2>
-  <p class="lead">Select a part on the board diagram to see what it does and what usually goes wrong with it. This is a simplified layout. Real boards differ.</p>
-  <div class="board">
-    <svg viewBox="0 0 520 400" role="group" aria-label="Simplified motherboard diagram with selectable parts">
-      <path class="trace" d="M150 110 H260 M260 110 V60 M330 140 H400 M200 170 V250 M300 250 H400 M120 330 H260"/>
-      <g class="part" data-part="cpu" tabindex="0" role="button" aria-label="CPU"><rect x="120" y="70" width="90" height="90" rx="6"/><text x="147" y="120">CPU</text></g>
-      <g class="part" data-part="fan" tabindex="0" role="button" aria-label="CPU cooler fan"><circle cx="165" cy="215" r="34"/><text x="150" y="219">FAN</text></g>
-      <g class="part" data-part="ram" tabindex="0" role="button" aria-label="RAM"><rect x="290" y="40" width="40" height="150" rx="4"/><rect x="340" y="40" width="40" height="150" rx="4"/><text x="296" y="120" transform="rotate(-90 310 120)">RAM</text></g>
-      <g class="part" data-part="mobo" tabindex="0" role="button" aria-label="Motherboard"><rect x="30" y="30" width="60" height="26" rx="4"/><text x="38" y="47">BOARD</text></g>
-      <g class="part" data-part="gpu" tabindex="0" role="button" aria-label="Graphics card"><rect x="230" y="235" width="170" height="50" rx="6"/><text x="280" y="265">GPU / VIDEO</text></g>
-      <g class="part" data-part="storage" tabindex="0" role="button" aria-label="Storage drive"><rect x="420" y="215" width="80" height="60" rx="6"/><text x="428" y="250">HDD/SSD</text></g>
-      <g class="part" data-part="psu" tabindex="0" role="button" aria-label="Power supply"><rect x="60" y="315" width="150" height="55" rx="6"/><text x="106" y="347">PSU</text></g>
-      <g class="part" data-part="cmos" tabindex="0" role="button" aria-label="CMOS battery"><circle cx="270" cy="335" r="22"/><text x="254" y="339">CMOS</text></g>
-    </svg>
-    <div class="partinfo" id="partinfo" aria-live="polite"></div>
-  </div>
-</section>
-
-<section id="fix">
-  <p class="eyebrow">Step-by-step procedures</p>
-  <h2>Troubleshoot a problem</h2>
-  <p class="lead">Choose the symptom that matches. Work through the steps in order and tick each one as you finish. Stop as soon as the problem is solved, then verify.</p>
-  <div class="method-strip"><span><small>STEP 1</small>Identify the problem</span><span><small>STEP 2</small>Isolate possible causes</span><span><small>STEP 3</small>Test one solution</span><span><small>STEP 4</small>Verify and document</span></div>
-  <div class="tabs" role="tablist" id="tabs"></div>
-  <div class="flow" id="flow" role="tabpanel"></div>
-</section>
-
-<section id="beeps">
-  <p class="eyebrow">POST error indicators</p>
-  <h2>Beep codes</h2>
-  <p class="lead">When the computer runs its power-on self-test (POST), the motherboard speaker can signal a fault with beeps. Always check the motherboard manual, because codes differ by BIOS maker.</p>
-  <div class="tablewrap"><table>
-    <thead><tr><th>Pattern</th><th>Common meaning</th><th>First thing to try</th></tr></thead>
-    <tbody>
-      <tr><td class="mono">1 short</td><td>POST passed, normal startup</td><td>No action needed.</td></tr>
-      <tr><td class="mono">Continuous or repeating long</td><td>Memory problem or power fault</td><td>Reseat RAM; test with one module.</td></tr>
-      <tr><td class="mono">1 long, 2 short</td><td>Video / graphics fault (typical on AMI/Award)</td><td>Reseat the graphics card and video cable.</td></tr>
-      <tr><td class="mono">1 long, 3 short</td><td>Memory or video memory error (varies)</td><td>Reseat RAM, then the graphics card.</td></tr>
-      <tr><td class="mono">Repeating short</td><td>Power supply or motherboard fault</td><td>Check power connectors and PSU.</td></tr>
-      <tr><td class="mono">No beep, no display</td><td>No speaker, dead board, or no power</td><td>Check power first, then the speaker header.</td></tr>
-    </tbody></table></div>
-  <p class="note">Indicator LEDs and two-digit debug displays on some boards give the same information. Look up their meaning in the manual.</p>
-</section>
-
-<section id="tools">
-  <p class="eyebrow">Tools and diagnostics</p>
-  <h2>Tools you will use</h2>
-  <div class="grid">
-    <div class="card"><h3>Phillips screwdriver</h3><p>Case panels, drive bays, most board screws. A magnetic tip helps.</p></div>
-    <div class="card"><h3>Anti-static wrist strap</h3><p>Equalizes charge between you and the chassis to protect components.</p></div>
-    <div class="card"><h3>Compressed air or soft brush</h3><p>Remove dust from fans, heatsinks and vents. Hold the fan blades still while you blow.</p></div>
-    <div class="card"><h3>Multimeter or PSU tester</h3><p>Checks whether the power supply is delivering correct voltages.</p></div>
-    <div class="card"><h3>POST card / speaker</h3><p>Shows or sounds the error code during startup.</p></div>
-    <div class="card"><h3>Diagnostic software</h3><p>Memory test utilities, drive health (SMART) viewers and temperature monitors help confirm a suspected fault.</p></div>
-  </div>
-</section>
-
-<section id="maintenance">
-  <p class="eyebrow">Preventive maintenance</p>
-  <h2>Keep it from breaking</h2>
-  <div class="grid">
-    <div class="card"><h3>Clean regularly</h3><p>Dust blocks airflow. Clean vents, filters and fans every few months in dusty rooms.</p></div>
-    <div class="card"><h3>Manage cables</h3><p>Tie cables away from fans and keep air paths clear.</p></div>
-    <div class="card"><h3>Keep it cool</h3><p>Leave space around the case. Never block intake or exhaust vents.</p></div>
-    <div class="card"><h3>Check connections</h3><p>Reseat cables and modules that have been moved or transported.</p></div>
-    <div class="card"><h3>Protect from power problems</h3><p>Use a surge protector or UPS. Avoid cutting power during startup or shutdown.</p></div>
-    <div class="card"><h3>Back up data</h3><p>A drive failure is easier to handle when your files are copied elsewhere.</p></div>
-  </div>
-</section>
-
-<section id="videos">
-  <p class="eyebrow">Demonstrations</p>
-  <h2>Video demos</h2>
-  <p class="lead">Video slots are ready for your instructor or research team to add recordings. Embedded players from other sites cannot load on this page, so each entry links out instead.</p>
-  <div class="vids" id="vids"></div>
-</section>
-
-<section id="quiz">
-  <p class="eyebrow">Self-assessment</p>
-  <h2>Self-check quiz</h2>
-  <p class="lead">Ten practice questions with explanations. This quiz is for practice and is separate from any official pretest or posttest.</p>
-  <div class="quiz" id="quizbox"></div>
-</section>
-
-<section id="checklists">
-  <p class="eyebrow">Quick reference</p>
-  <h2>Troubleshooting checklists</h2>
-  <p class="lead">Tick items as you go, or copy a checklist as plain text to paste into your notes or a printout.</p>
-  <div class="checks" id="checks"></div>
-</section>
-
-<section id="glossary">
-  <p class="eyebrow">Technical terms</p>
-  <h2>Glossary</h2>
-  <div class="gl-tools"><input id="glq" type="search" placeholder="Filter terms" aria-label="Filter glossary"></div>
-  <dl class="gloss" id="gloss"></dl>
-</section>
-
-<section id="faq">
-  <p class="eyebrow">Common questions</p>
-  <h2>FAQ</h2>
-  <div class="faq" id="faqbox"></div>
-</section>
-
-<footer>EduFix is a supplementary learning resource developed for a research study with first-year students. It is not an official school or manufacturer manual. Follow your instructor's lab rules and the documentation for your specific hardware.</footer>
-</main>
-</div>
+<dialog id="pal" aria-label="Search EduFix">
+  <div style="padding:12px 16px"><input type="search" id="palIn" placeholder="Search topics, glossary, FAQ, beep codes" autocomplete="off"></div>
+  <div class="pal-list" id="palList"></div>
+</dialog>
+<div id="consentHost"></div>
 
 <script>
-(function(){
-var $=function(s,r){return (r||document).querySelector(s)};
-var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
-function toast(m){var t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove()},1800)}
-function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
-
-/* theme */
-var root=document.documentElement;
-var saved=store('edufix-theme'); if(saved)root.setAttribute('data-theme',saved);
-$('#theme').onclick=function(){
-  var dark=root.getAttribute('data-theme')?root.getAttribute('data-theme')==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
-  var n=dark?'light':'dark'; root.setAttribute('data-theme',n); store('edufix-theme',n)};
-
-/* parts */
-var PARTS={
- cpu:{n:'CPU (processor)',f:'Runs instructions and does the computing. Often called the brain of the computer.',p:'Overheating if the heatsink is loose or dry of thermal paste; bent pins when installed wrongly; computer freezing or shutting down.'},
- ram:{n:'RAM (memory)',f:'Temporarily stores data the CPU is actively using. Contents are lost when power is off.',p:'Loose or dirty contacts cause beeping, no display or random restarts. Fix by reseating or testing one module at a time.'},
- mobo:{n:'Motherboard',f:'The main circuit board that connects every major component and carries power and data between them.',p:'Bulging capacitors, burn marks, or shorts from loose screws or standoffs. Usually the last part to suspect.'},
- psu:{n:'Power Supply Unit (PSU)',f:'Converts wall power into the lower DC voltages that components need.',p:'No power at all, random shutdowns, burning smell. Check cables and switch first. Never open the PSU.'},
- storage:{n:'Storage drive (HDD/SSD)',f:'Keeps the operating system, programs and files permanently.',p:'Not detected, slow performance, clicking sounds (HDD), or boot failure. Check the data and power cables and BIOS detection.'},
- gpu:{n:'Graphics / video output',f:'Produces the picture sent to the monitor. May be a separate card or built into the CPU or board.',p:'No signal, distorted or flickering display. Check the cable, the monitor input and reseat the card.'},
- fan:{n:'Cooling fan and heatsink',f:'Moves heat away from the CPU and other hot parts.',p:'Dust buildup, a stuck fan or blocked vents cause overheating, noise and sudden shutdowns.'},
- cmos:{n:'CMOS battery',f:'A small coin cell that keeps BIOS settings and the clock when the unit is unplugged.',p:'Wrong date and time, lost BIOS settings, boot setup errors. Replace the cell.'}
+/* ---------- data ---------- */
+const ICON={
+ safety:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+ components:'<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/>',
+ power:'<path d="M12 2v9"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/>',
+ display:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+ boot:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 13h6M9 17h6M9 9h3"/>',
+ ram:'<rect x="2" y="8" width="20" height="8" rx="1"/><path d="M6 16v3M10 16v3M14 16v3M18 16v3M6 11h2M11 11h2M16 11h2"/>',
+ storage:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>',
+ cooling:'<circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 4-7 2 0 2 3 0 5M14 12c4 0 7 1 7 4 0 2-3 2-5 0M12 14c0 4-1 7-4 7-2 0-2-3 0-5M10 12c-4 0-7-1-7-4 0-2 3-2 5 0"/>',
+ periph:'<rect x="7" y="2" width="10" height="14" rx="5"/><path d="M12 2v6M12 16v3a3 3 0 0 0 3 3h3"/>'
 };
-function showPart(k){
-  var p=PARTS[k];$$('.part').forEach(function(g){g.classList.toggle('on',g.dataset.part===k)});
-  $('#partinfo').innerHTML='<p class="eyebrow">Selected part</p><h3>'+esc(p.n)+'</h3><dl><dt>What it does</dt><dd>'+esc(p.f)+'</dd><dt>Common problems</dt><dd>'+esc(p.p)+'</dd></dl>';
-}
-$$('.part').forEach(function(g){
-  g.onclick=function(){showPart(g.dataset.part)};
-  g.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();showPart(g.dataset.part)}};
-});
-showPart('cpu');
-
-/* troubleshooting flows */
-var FIX=[
-{id:'power',t:'Won’t turn on',sym:'Nothing happens when the power button is pressed: no fans, no lights.',steps:[
- ['Confirm the symptom','Press the power button once. Note whether any light, fan or sound appears.'],
- ['Check the wall outlet and power cable','Plug in a lamp or phone charger to test the outlet. Reseat the power cable at both ends. Try a known good cable.'],
- ['Check the PSU switch','On the back of the unit, make sure the PSU switch is on (I, not O).'],
- ['Check peripherals','Disconnect extra USB devices and cables, then try again. A faulty device can block startup.'],
- ['Open the case safely and check internal power','Reseat the 24-pin motherboard connector and the CPU power connector. Check the front-panel power switch header.'],
- ['Test the PSU','Swap in a known good PSU or use a PSU tester. Do not open the PSU.','warn'],
- ['Verify and document','Confirm the computer starts and reaches the desktop. Record what was wrong and what fixed it.']],
- esc:'Still dead with a known good PSU and cable: the motherboard or front-panel switch may be faulty. Report to your instructor.'},
-{id:'display',t:'No display',sym:'The computer powers on and fans spin, but the monitor shows nothing or “No signal”.',steps:[
- ['Check the monitor','Is it powered on? Is the correct input selected (HDMI, DisplayPort, VGA)? Try a different monitor if possible.'],
- ['Check the video cable','Reseat both ends. Try another cable. Look for bent pins.'],
- ['Use the correct output','If the unit has a graphics card, plug the monitor into the card, not the motherboard ports.'],
- ['Listen for beeps','Beeps at startup point to RAM or video faults. See the beep code table.'],
- ['Reseat RAM and graphics card','Power down, unplug, wear your strap. Remove and firmly reinstall the modules and the card.'],
- ['Clear the CMOS (if the manual allows)','Remove the coin cell for about a minute or use the jumper, then replace it.'],
- ['Verify and document','Confirm a stable picture after restart and record the cause.']],
- esc:'Still no image with a known good monitor, cable and reseated parts: test with a different graphics card or RAM. Report to your instructor.'},
-{id:'boot',t:'Won’t boot',sym:'The computer starts but freezes at the logo, shows a startup error, or never loads the operating system.',steps:[
- ['Read the error message','Write down the exact text, such as “No bootable device” or “Operating system not found”.'],
- ['Remove other media','Unplug USB drives and remove discs that the BIOS may try to boot first.'],
- ['Check the storage drive connection','Power down and unplug. Reseat the data and power cables at the drive and the board.'],
- ['Check BIOS detection','Enter BIOS setup (often Del, F2 or F10). Confirm the drive is listed and is first in the boot order.'],
- ['Check the CMOS battery and date','A wrong date or reset settings suggest a dead coin cell.'],
- ['Test the drive','Try the drive on another computer or run its diagnostic. A drive that is not detected at all may have failed.','warn'],
- ['Verify and document','Confirm the system reaches the desktop and restarts correctly three times.']],
- esc:'Drive detected but the system will not load: the operating system may need repair or reinstalling. This is a software step, so ask your instructor.'},
-{id:'ram',t:'RAM and beep codes',sym:'Repeated beeps at startup, memory error messages, or random restarts.',steps:[
- ['Count and note the beep pattern','Write down long and short beeps. Compare with the beep code table and the board manual.'],
- ['Power down, unplug and ground yourself','Follow the safety steps before opening the case.'],
- ['Reseat the RAM modules','Release the clips, remove each module, then press it back firmly until the clips click.'],
- ['Test one module at a time','Boot with a single module in the first recommended slot. Repeat for each module and slot.'],
- ['Clean the contacts','Wipe the gold contacts gently with a clean, dry, lint-free cloth.','warn'],
- ['Run a memory test','If the unit starts, run a memory diagnostic tool and check for errors.'],
- ['Verify and document','Record which module or slot was faulty, and confirm normal startup.']],
- esc:'Errors that follow a particular module mean that module has failed and needs replacement.'},
-{id:'storage',t:'Drive not detected or slow',sym:'The HDD/SSD does not appear in BIOS or the system, or it becomes very slow.',steps:[
- ['Check the symptoms','Clicking noises on an HDD, missing drive in file manager, or very slow file access.'],
- ['Back up important data first','If the drive still works at all, copy important files before testing further.','warn'],
- ['Reseat the cables','Reconnect the data cable and the power connector at both ends. Try a different SATA port or cable.'],
- ['Check BIOS detection','If it is not listed in BIOS, the problem is hardware or connection, not the operating system.'],
- ['Check drive health','Use a health tool to read SMART status. Many reallocated sectors suggest a failing drive.'],
- ['Check free space and heat','A nearly full or hot drive slows down. Free space and improve airflow.'],
- ['Verify and document','Confirm the drive is detected, performs normally and the data is intact.']],
- esc:'A drive that clicks, is not detected on another computer, or reports health warnings should be replaced.'},
-{id:'periph',t:'Keyboard, mouse or USB',sym:'A keyboard, mouse or USB device does not respond or is not recognized.',steps:[
- ['Check the basics','Is the device plugged in? Does a wireless device have charged batteries and its receiver connected?'],
- ['Try another port','Move the device to a different USB port, preferably at the back of the unit.'],
- ['Try another device or computer','Test the device on another computer, and test a different device on this one. This isolates the cause.'],
- ['Look for damage','Inspect the cable and connector for bends, cuts or bent pins.'],
- ['Check the port and header','If every device fails on a port, the port or its internal header connection may be loose.'],
- ['Verify and document','Confirm the device works for a minute of real use.']],
- esc:'Several ports dead at once usually points to a loose front-panel connector or a faulty board.'},
-{id:'heat',t:'Overheating',sym:'Loud fans, a hot case, sudden shutdowns, or slowdowns under load.',steps:[
- ['Check the surroundings','Is the unit in a tight space, in sunlight, or with blocked vents?'],
- ['Check that all fans spin','With the unit on, look at the CPU fan, case fans and PSU fan. Any that are still are suspect.'],
- ['Power down and unplug, then open the case','Follow the safety steps.'],
- ['Remove dust','Use compressed air in short bursts. Hold the fan blades still. Clean heatsink fins and filters.'],
- ['Check heatsink seating','The CPU cooler should sit flat and firm. A loose cooler or dried thermal paste raises temperature.','warn'],
- ['Tidy the cables','Move cables out of airflow paths.'],
- ['Verify with a temperature monitor','Run a monitoring tool at idle and under load, and compare against the CPU maker’s safe range.']],
- esc:'A fan that will not spin after cleaning needs replacing. Persistently high temperatures with good airflow may mean the cooler needs reseating with fresh thermal paste.'},
-{id:'freeze',t:'Freezing or random restarts',sym:'The system hangs or restarts without warning.',steps:[
- ['Note when it happens','At startup, under load, after some time? Heat points to cooling, immediate failure points to power or RAM.'],
- ['Check temperatures','See the overheating steps.'],
- ['Reseat RAM and cables','Reseat memory modules, and the power connectors on the motherboard.'],
- ['Test RAM','Run a memory test or try modules one at a time.'],
- ['Check the drive','A failing drive can cause freezes. Check its health.'],
- ['Check the PSU','An under-powered or failing PSU causes restarts when load rises.','warn'],
- ['Verify and document','Run the unit for a sustained period without errors, then record your findings.']],
- esc:'If hardware tests are clean, the cause may be software or drivers. Discuss with your instructor.'}
+const GLOSS={
+ 'ESD':'Electrostatic discharge. A static spark from your body that can silently damage chips.',
+ 'POST':'Power-On Self-Test. The checks the BIOS runs when you press the power button.',
+ 'BIOS':'Basic firmware on the motherboard that starts the hardware before the operating system loads.',
+ 'PSU':'Power supply unit. Converts wall AC power into the DC voltages the parts need.',
+ 'CMOS battery':'A coin cell (usually CR2032) that keeps BIOS settings and the clock alive when unplugged.',
+ 'Thermal paste':'A thin layer of compound between a CPU and its cooler that helps move heat across.',
+ 'DIMM':'A single RAM stick that fits in a motherboard memory slot.',
+ 'SATA':'The connector standard used by most 2.5-inch SSDs and hard drives.',
+ 'Throttling':'The CPU slows itself down to avoid overheating, which makes the PC feel sluggish.',
+ 'Motherboard':'The main circuit board that every other part plugs into.',
+ 'Peripheral':'A device you plug in, such as a keyboard, mouse, printer or flash drive.',
+ 'SMART':'Self-monitoring data a drive reports about its own health.',
+ 'Standoff':'A small brass post that holds the motherboard off the metal case.',
+ 'GPU':'Graphics processing unit. It draws the picture sent to your monitor.'
+};
+const T=[
+{id:'safety',t:'Safety, ESD and opening the case',ic:'safety',min:6,diff:'Beginner',case:false,
+ intro:'Every repair in EduFix starts here. A few habits protect you, the parts and the school lab equipment.',
+ sym:['You plan to open a case or touch a board','You shuffle across carpet before handling parts'],
+ cause:['Static charge on your body ({{ESD}})','Power still present inside the PSU or on the board','Clutter that leads to dropped screws and bent pins'],
+ steps:[['Shut down and unplug','Turn the PC off from the operating system, flip the {{PSU}} switch to 0, then pull the power cable from the wall.','Standby power keeps parts of the board live even when the PC looks off.'],
+ ['Press the power button once','With the cable out, hold the power button for 5 seconds to drain leftover charge.','This empties the capacitors so you are not working on a live board.'],
+ ['Ground yourself','Put on an ESD wrist strap clipped to bare metal on the case, or touch bare metal often.','Equal charge between you and the case means no spark when you touch a part.'],
+ ['Clear and light the workspace','Use a clean, dry table. Keep screws in a small tray, sorted by where they came from.','Mixed screws are the most common reason a case will not close again.'],
+ ['Open the case','Remove the two or four thumbscrews at the back and slide the side panel off.','Panels are held by the rear screws only. Forcing them bends the frame.']],
+ ver:'The case is open, you are grounded, and no cable is connected to the wall.',
+ quiz:[['What is the first step before opening a PC case?',['Remove the RAM','Shut down and unplug the power cable','Touch the CPU','Press Delete at startup'],1,'Power must be fully removed before any part is touched.'],
+ ['Why wear an ESD strap?',['To keep the screws magnetic','To equalise charge so static does not damage chips','To cool the CPU','To improve Wi-Fi'],1,'The strap keeps you and the case at the same electrical level.']]},
+{id:'components',t:'Know your components',ic:'components',min:7,diff:'Beginner',case:false,
+ intro:'Before you fix a part, you need to recognise it. This guide walks through what sits inside a typical desktop.',
+ sym:['You cannot tell which part is failing because you cannot name them','A technician says "reseat the card" and you are unsure which one'],
+ cause:['Unfamiliar part names','Cables that look alike but carry different power'],
+ steps:[['Find the {{Motherboard}}','It is the largest board, mounted flat on {{Standoff}}s. Everything else connects to it.','Knowing the board layout tells you where to look for any fault.'],
+ ['Locate the CPU and cooler','Near the top centre, under a heatsink and fan.','A hot or loose cooler explains many random shutdowns.'],
+ ['Find the memory slots','Long slots beside the CPU holding {{DIMM}} sticks.','RAM faults are common and easy to test by swapping sticks.'],
+ ['Trace the power cables','A wide 24-pin plug goes to the board. A smaller 4 or 8-pin plug goes near the CPU.','Both must be fully seated or the PC will not start.'],
+ ['Find the drives','Look for {{SATA}} cables or a small M.2 card lying flat on the board.','Drive problems look like slow starts or "no boot device" messages.']],
+ ver:'You can name the board, CPU, RAM, PSU, drive and graphics card and point to each.',
+ quiz:[['Which cable has 24 pins?',['Main motherboard power','Monitor cable','SATA data cable','USB header'],0,'The 24-pin ATX connector is the main power link to the board.'],
+ ['Which part holds BIOS settings when the PC is unplugged?',['RAM','CMOS battery','Fan','GPU'],1,'The CMOS battery keeps settings and the clock alive.']]},
+{id:'power',t:'Power problems',ic:'power',min:8,diff:'Beginner',case:true,
+ intro:'The PC shows no sign of life. Work from the wall socket inward.',
+ sym:['Nothing happens when you press the power button','No fan spin, no lights','PC turns on for a second then off'],
+ cause:['Loose or faulty power cable or surge strip','{{PSU}} switch off or PSU failed','24-pin or CPU power plug not fully seated','Case power button cable pulled off the board'],
+ steps:[['Check the outside first','Try a different wall socket and a known good power cable. Confirm the PSU switch is on (I).','Most "dead" PCs are a loose cable or a switched-off strip.'],
+ ['Complete the safety gate','Unplug, ground yourself and open the case.','You are about to touch the inside of the machine.'],
+ ['Reseat the main power plugs','Press the 24-pin and the CPU power plug firmly until the clip clicks.','A plug that looks seated can still sit a few millimetres out.'],
+ ['Check the front panel header','Confirm the power switch wire is on the PWR_SW pins in the board manual.','If the board never receives the button press, nothing starts.'],
+ ['Try another PSU','Swap in a known good PSU from the lab and press the button.','A PSU can fail under load and still show a green light.']],
+ ver:'The fans spin and the BIOS screen appears within a few seconds.',
+ quiz:[['The PC is completely dead. What do you check first?',['Reinstall Windows','Wall socket, cable and PSU switch','Replace the RAM','Update the BIOS'],1,'Always start with the simplest outside causes.'],
+ ['What does a PSU convert?',['DC to AC','Wall AC power to low-voltage DC','Heat to power','Data to power'],1,'It supplies DC rails to the parts.']]},
+{id:'display',t:'No display',ic:'display',min:7,diff:'Beginner',case:false,
+ intro:'The PC sounds alive but the screen stays black. The fault is often the cable or the input, not the PC.',
+ sym:['Fans spin but the monitor says "No signal"','Screen flickers or shows lines','Display works only at the BIOS screen'],
+ cause:['Wrong monitor input selected','Loose or damaged video cable','Cable plugged into the motherboard while a {{GPU}} is installed','Faulty monitor or GPU'],
+ steps:[['Check the monitor itself','Make sure the monitor is on and set to the right input (HDMI, DP or VGA).','The monitor may be listening to the wrong port.'],
+ ['Reseat the video cable at both ends','Unplug and plug back in. Try a different cable if you have one.','A half-seated connector shows a black screen.'],
+ ['Use the correct port','If the PC has a graphics card, plug into the card, not the board.','The board output is usually disabled when a card is installed.'],
+ ['Try another monitor','Connect a different monitor or a TV.','This separates a monitor fault from a PC fault.'],
+ ['Reseat the graphics card','After the safety gate, remove and firmly reinsert the card until the latch clicks.','Dust or a loose card breaks the connection.']],
+ ver:'The BIOS logo and the desktop appear on the screen.',
+ quiz:[['Fans spin but the screen shows "No signal". What is a likely cause?',['Dead PSU','Wrong input or loose video cable','Full hard drive','Missing keyboard'],1,'The PC is running, so look at the display path.'],
+ ['A PC has a graphics card. Where should the monitor plug in?',['The motherboard port','The graphics card port','The USB port','Any port'],1,'The card output is the active one.']]},
+{id:'boot',t:'Boot failures and beep codes',ic:'boot',min:8,diff:'Intermediate',case:false,
+ intro:'The PC powers on but never reaches the desktop. The {{POST}} stage tells you a lot through beeps and messages.',
+ sym:['Beeps at startup','"No boot device" or "Operating system not found"','Stuck at the logo or in a restart loop'],
+ cause:['RAM or video fault caught by {{POST}}','Drive not detected or wrong boot order in the {{BIOS}}','Dead {{CMOS battery}} resetting settings','Corrupted operating system'],
+ steps:[['Count the beeps','Listen carefully and write the pattern down with short and long beeps.','Each pattern points to one subsystem.'],
+ ['Look up the code','Use the Beep-Code lookup in EduFix and pick your BIOS maker.','Makers use different patterns for the same fault.'],
+ ['Disconnect extras','Remove USB sticks, printers and discs, then restart.','A stray bootable device can confuse the boot order.'],
+ ['Check the boot order','Press Del or F2 at startup and confirm the system drive is first.','If settings reset, the CMOS battery may be flat.'],
+ ['Replace the CMOS battery','After the safety gate, pop out the coin cell and replace it with a new CR2032.','A flat battery forgets the date and boot settings.']],
+ ver:'The PC passes POST with a single short beep or none, and loads the operating system.',
+ quiz:[['What does POST stand for?',['Power-On Self-Test','Primary Operating System Task','Portable Offline Storage Test','Program Output Status Table'],0,'It is the hardware check at power on.'],
+ ['Date and time reset every time the PC is unplugged. Likely cause?',['Dead CMOS battery','Bad monitor','Full drive','Loose mouse'],0,'The coin cell keeps the clock alive.']]},
+{id:'ram',t:'Memory (RAM) faults',ic:'ram',min:6,diff:'Intermediate',case:true,
+ intro:'Bad or loose memory causes beeps, freezes and blue screens. The fix is often a firm push.',
+ sym:['Continuous beeping at startup','Random freezes or blue screens','Installed memory shows less than expected'],
+ cause:['{{DIMM}} not fully seated','Dusty contacts','A failing stick or incompatible type'],
+ steps:[['Complete the safety gate','Power off, unplug and ground yourself.','Memory is sensitive to {{ESD}}.'],
+ ['Remove and inspect the sticks','Push the side clips outward and lift each stick. Hold by the edges only.','Skin oil and dust on the gold contacts cause bad connections.'],
+ ['Clean the contacts','Wipe gently with a dry lint-free cloth.','Do not use water or sharp tools.'],
+ ['Reseat firmly','Line up the notch, then push both ends down until the clips click.','A one-sided push leaves the stick loose.'],
+ ['Test one stick at a time','Boot with a single stick in the first slot, then try each stick and slot.','This isolates the faulty stick or slot.']],
+ ver:'The PC boots and shows the full memory amount in system properties.',
+ quiz:[['How do you find a faulty RAM stick?',['Replace the PSU','Test one stick at a time','Format the drive','Change the monitor'],1,'Testing singly isolates the bad one.'],
+ ['Which part do you hold a RAM stick by?',['Gold contacts','The edges','The chips','The notch'],1,'Touch edges only to protect the contacts and chips.']]},
+{id:'storage',t:'Storage and slow starts',ic:'storage',min:7,diff:'Intermediate',case:true,
+ intro:'Drives fail slowly. Clicking, long start times and missing files are early warnings.',
+ sym:['"No boot device found"','Clicking or grinding noise from a hard drive','Very slow start or frequent freezing','Files that disappear or will not open'],
+ cause:['Loose data or power cable','Failing drive with bad sectors','Corrupt file system','Full drive'],
+ steps:[['Back up first','If you can still reach the files, copy them to a flash drive or another disk.','A failing drive may not survive many more starts.'],
+ ['Check the drive in BIOS','Open the {{BIOS}} and confirm the drive is listed.','If it is missing, the fault is the cable or the drive.'],
+ ['Reseat the cables','After the safety gate, unplug and replug the {{SATA}} data and power cables or reseat the M.2 card.','A loose cable shows as a missing drive.'],
+ ['Read the health data','Use a tool such as CrystalDiskInfo to check the {{SMART}} status.','Warnings here mean replace the drive soon.'],
+ ['Replace and restore','Install a new drive and reinstall or restore the operating system.','A drive with bad sectors only gets worse.']],
+ ver:'The drive is detected, SMART shows Good, and the PC starts normally.',
+ quiz:[['What should you do first when a drive is failing?',['Format it','Back up your files','Add more RAM','Clean the fan'],1,'Protect the data before further testing.'],
+ ['What does SMART report?',['Drive health','Monitor brightness','RAM speed','Network speed'],0,'Drives report their own health through SMART.']]},
+{id:'cooling',t:'Overheating and cooling',ic:'cooling',min:7,diff:'Intermediate',case:true,
+ intro:'Heat makes a PC slow, loud and unstable. Most cooling faults come from dust.',
+ sym:['Loud fans','Sudden shutdowns during use','The PC slows down under load ({{Throttling}})','Hot air from the case'],
+ cause:['Dust blocking fans and heatsinks','Failed or slow fan','Dried {{Thermal paste}}','Blocked vents or poor airflow'],
+ steps:[['Check the vents','Move the PC away from walls and make sure the intake and exhaust are clear.','Hot air cannot leave a blocked case.'],
+ ['Complete the safety gate','Power off, unplug and ground yourself before opening.','You will be near the fans and heatsink.'],
+ ['Blow out the dust','Use short bursts of compressed air. Hold each fan blade still with a finger.','A spinning fan can be damaged by a strong air stream.'],
+ ['Check every fan spins','Power on briefly with the case open and watch the fans.','A dead fan needs replacement.'],
+ ['Renew the thermal paste','If the CPU still runs hot, remove the cooler, clean the old paste and apply a pea-sized dot.','Old paste stops moving heat to the heatsink.']],
+ ver:'Idle temperature stays under about 50 °C and the PC runs a full task without shutting down.',
+ quiz:[['The most common cause of overheating is?',['Dust build-up','Too little RAM','A long cable','A dead mouse'],0,'Dust blocks airflow and insulates parts.'],
+ ['How much thermal paste should you apply?',['Cover the whole board','A pea-sized dot','A full tube','None'],1,'Too much paste insulates and spills.']]},
+{id:'periph',t:'Peripherals',ic:'periph',min:5,diff:'Beginner',case:false,
+ intro:'Keyboards, mice, printers and flash drives fail in simple ways. Start by checking the connection.',
+ sym:['Keyboard or mouse does nothing','USB device not recognised','Printer shows offline'],
+ cause:['Loose cable or dead USB port','Missing or broken driver','Device needs power or batteries'],
+ steps:[['Check the physical connection','Unplug the device and plug it into a different port on the back of the PC.','Front ports can be loose or unpowered.'],
+ ['Test on another computer','Plug the same device into a working PC.','If it fails there too, the device is faulty.'],
+ ['Check the {{Peripheral}} in Device Manager','Open Device Manager and look for a yellow warning icon.','A warning icon means the driver is the problem.'],
+ ['Reinstall the driver','Right-click the device, uninstall it, unplug, then plug it back in.','Windows reinstalls a clean driver on reconnect.'],
+ ['Replace if needed','Swap with a known good device from the lab.','Cheap peripherals are faster to replace than to repair.']],
+ ver:'The device responds and appears in Device Manager without a warning icon.',
+ quiz:[['A USB mouse does nothing. First try?',['Reinstall Windows','Use a different USB port','Replace the PSU','Open the case'],1,'The port or cable is the simplest fault.'],
+ ['A yellow warning icon in Device Manager means?',['Driver problem','Hot CPU','Low RAM','Full drive'],0,'It points to a driver or recognition issue.']]}
 ];
-var cur=store('edufix-tab')||'power';
-var done={};
-function renderTabs(){
-  $('#tabs').innerHTML=FIX.map(function(f){return '<button class="tab" role="tab" aria-selected="'+(f.id===cur)+'" data-id="'+f.id+'">'+esc(f.t)+'</button>'}).join('');
-  $$('#tabs .tab').forEach(function(b){b.onclick=function(){cur=b.dataset.id;store('edufix-tab',cur);renderTabs();renderFlow()}});
-}
-function renderFlow(){
-  var f=FIX.filter(function(x){return x.id===cur})[0]||FIX[0];
-  var d=done[f.id]||(done[f.id]={});
-  var html='<header><h3>'+esc(f.t)+'</h3><span class="eyebrow" id="prog"></span></header><p>'+esc(f.sym)+'</p><div class="progress" style="margin-top:14px"><i id="bar"></i></div>';
-  f.steps.forEach(function(s,i){
-    html+='<div class="step"><input type="checkbox" id="st-'+f.id+i+'" '+(d[i]?'checked':'')+' data-i="'+i+'"><label for="st-'+f.id+i+'"><b>'+esc(s[0])+(s[2]?'<span class="tag">Careful</span>':'')+'</b><span>'+esc(s[1])+'</span></label></div>';
-  });
-  html+='<div class="escalate"><b>If it is still not solved.</b> '+esc(f.esc)+'</div><div class="btnrow"><button class="btn ghost" id="reset">Reset steps</button></div>';
-  $('#flow').innerHTML=html;
-  function upd(){var n=f.steps.filter(function(_,i){return d[i]}).length;$('#prog').textContent=n+' of '+f.steps.length+' steps done';$('#bar').style.width=(100*n/f.steps.length)+'%'}
-  $$('#flow input').forEach(function(c){c.onchange=function(){d[c.dataset.i]=c.checked;upd()}});
-  $('#reset').onclick=function(){done[f.id]={};renderFlow()};
-  upd();
-}
-renderTabs();renderFlow();
-$$('[data-go]').forEach(function(a){a.addEventListener('click',function(){cur=a.dataset.go;store('edufix-tab',cur);renderTabs();renderFlow()})});
-
-/* videos */
-var VID=[['Opening a case safely','Safety, ESD and removing the panel'],['Reseating RAM','Remove, inspect and reinstall modules'],['Checking power connections','24-pin, CPU power and drive power'],['Cleaning dust and fans','Compressed air technique'],['Reading beep codes','What the patterns mean'],['Reassembling the unit','Cables, panels and final test']];
-$('#vids').innerHTML=VID.map(function(v){return '<div class="vid"><div class="screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></div><b>'+esc(v[0])+'</b><br><small>'+esc(v[1])+'. Video to be added.</small></div>'}).join('');
-
-/* quiz */
-var QZ=[
-['Which component is the main circuit board that connects the major parts of a computer?',['Power Supply Unit (PSU)','Motherboard','Random Access Memory (RAM)','Storage drive'],1,'The motherboard connects and carries signals and power between all the other components.'],
-['A computer does not turn on when the power button is pressed. What should be checked first?',['Mouse connection','Power connection and power supply','Monitor brightness','Keyboard layout'],1,'Start with the simplest, most likely cause: no power reaching the unit.'],
-['Which component temporarily stores data the CPU is actively using?',['HDD/SSD','RAM','PSU','Optical drive'],1,'RAM is fast, temporary working memory. Storage drives keep data permanently.'],
-['A computer powers on but there is no display. Which is NOT a likely cause?',['Loose video cable','Incorrect monitor input','Unresponsive mouse','Faulty graphics component'],2,'A mouse does not affect the picture. The other three do.'],
-['What is the safest first step before opening a computer case?',['Turn off and unplug the computer','Remove the RAM','Spray liquid on the components','Shake the computer case'],0,'Remove power first to protect yourself and the components.'],
-['Repeated beeps during startup may indicate a problem with which type of component?',['Internet connection','Hardware such as RAM or graphics hardware','Printer driver only','Operating system update'],1,'POST beep codes report hardware faults found before the operating system loads.'],
-['Which accessory helps reduce the risk of electrostatic discharge when handling internal hardware?',['Anti-static wrist strap','USB flash drive','Speaker','Monitor cable'],0,'A wrist strap keeps you and the chassis at the same electrical potential.'],
-['The computer begins booting but the operating system does not load and the screen freezes. What is a logical step?',['Immediately replace the motherboard','Check the storage drive connection and status','Ignore the problem','Replace all components'],1,'Test the likely and cheap cause first. The operating system lives on the storage drive.'],
-['Which condition commonly contributes to overheating?',['Clean cooling fans','Blocked vents and dust buildup','New RAM installation','Updated operating system'],1,'Dust and blocked vents restrict airflow so heat cannot escape.'],
-['Which sequence is a logical general troubleshooting process?',['Replace parts first, then identify the problem','Identify the problem, isolate possible causes, test a solution, and verify the result','Verify the result before identifying the problem','Guess a solution and apply it without testing'],1,'Identify, isolate, test, verify. Changing parts before you understand the problem wastes time and can hide the real cause.']];
-var qi=0,score=0,locked=false;
-function renderQ(){
-  var box=$('#quizbox');
-  if(qi>=QZ.length){
-    var msg=score>=9?'Excellent. You are ready for the lab.':score>=7?'Good work. Review the items you missed.':'Keep practicing. Revisit the safety and troubleshooting sections.';
-    box.innerHTML='<p class="eyebrow">Result</p><div class="score">'+score+' / '+QZ.length+'</div><p>'+msg+'</p><div class="btnrow"><button class="btn" id="again">Try again</button></div>';
-    $('#again').onclick=function(){qi=0;score=0;renderQ()};return;
-  }
-  var q=QZ[qi];locked=false;
-  box.innerHTML='<p class="eyebrow">Question '+(qi+1)+' of '+QZ.length+'</p><div class="q">'+esc(q[0])+'</div><div class="opts">'+q[1].map(function(o,i){return '<button class="opt" data-i="'+i+'"><b>'+'ABCD'[i]+'.</b><span>'+esc(o)+'</span></button>'}).join('')+'</div><div id="fb"></div>';
-  $$('.opt',box).forEach(function(b){b.onclick=function(){
-    if(locked)return;locked=true;var i=+b.dataset.i;
-    $$('.opt',box).forEach(function(x,j){x.disabled=true;if(j===q[2])x.classList.add('right')});
-    if(i===q[2])score++;else b.classList.add('wrong');
-    $('#fb').innerHTML='<div class="why"><b>'+(i===q[2]?'Correct.':'Not quite.')+'</b> '+esc(q[3])+'</div><div class="btnrow"><button class="btn" id="next">'+(qi===QZ.length-1?'See score':'Next question')+'</button></div>';
-    $('#next').onclick=function(){qi++;renderQ()};$('#next').focus();
-  }});
-}
-renderQ();
-
-/* checklists */
-var CK=[
-['Before opening a unit',['Shut down and unplug the power cable','Hold the power button 5 seconds to drain charge','Put on the anti-static wrist strap and clip to the chassis','Clear the work surface and prepare a screw tray','Photograph cable positions']],
-['General troubleshooting',['Identify and describe the symptom','Ask what changed recently','Check the simple things first: power, cables, switches','Change one thing at a time','Test after each change','Verify the unit works and document the fix']],
-['No power',['Outlet works','Cable seated and good','PSU switch on','Peripherals removed','Motherboard and CPU power connectors seated','PSU tested']],
-['No display',['Monitor on and correct input','Video cable reseated','Cable in the right port','RAM reseated','Graphics card reseated','Beep pattern noted']],
-['Overheating',['Vents clear','All fans spinning','Dust removed','Heatsink seated firmly','Cables tidy','Temperatures checked after cleaning']],
-['After troubleshooting',['Panels and screws replaced','All cables reconnected','Unit powers on and boots','Problem confirmed fixed','Problem and solution written down','Tools returned']]];
-$('#checks').innerHTML=CK.map(function(c,ci){return '<div class="card"><h3>'+esc(c[0])+'</h3><ul>'+c[1].map(function(x,i){return '<li><label><input type="checkbox"> <span>'+esc(x)+'</span></label></li>'}).join('')+'</ul><button class="btn ghost" data-copy="'+ci+'">Copy as text</button></div>'}).join('');
-$$('[data-copy]').forEach(function(b){b.onclick=function(){
-  var c=CK[+b.dataset.copy];var t=c[0]+'\n'+c[1].map(function(x){return '[ ] '+x}).join('\n');
-  function fb(){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copied')}catch(e){toast('Select and copy manually')}ta.remove()}
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){toast('Copied')},fb)}else fb();
-}});
-
-/* glossary */
-var GL=[['ATX connector','The 24-pin power connector from the PSU to the motherboard.'],['BIOS / UEFI','Firmware on the motherboard that starts the hardware and loads the operating system.'],['Boot','The startup process that loads the operating system.'],['Boot order','The sequence of devices the BIOS checks for an operating system.'],['Chassis','The metal case that holds and grounds the computer parts.'],['CMOS battery','Coin cell that keeps BIOS settings and the clock.'],['CPU','Central processing unit, the processor that runs instructions.'],['ESD','Electrostatic discharge, a sudden flow of static electricity that can damage components.'],['GPU','Graphics processing unit that creates the display output.'],['HDD','Hard disk drive that stores data on spinning magnetic platters.'],['Heatsink','Metal part that draws heat away from a chip.'],['Motherboard','The main board connecting all components.'],['POST','Power-on self-test run by the BIOS at startup.'],['PSU','Power supply unit that converts mains AC to DC voltages.'],['RAM','Random access memory used as temporary working storage.'],['Reseat','Remove a part or cable and firmly install it again.'],['SATA','Standard connection used by many internal drives.'],['SMART','Drive self-monitoring data that reports health.'],['SSD','Solid-state drive that stores data on flash memory with no moving parts.'],['Thermal paste','Compound that improves heat transfer between a CPU and its heatsink.'],['UPS','Uninterruptible power supply, a battery backup that rides through power loss.'],['Beep code','A pattern of beeps from the motherboard speaker that signals a POST error.']];
-function renderGl(f){f=(f||'').toLowerCase();$('#gloss').innerHTML=GL.filter(function(g){return !f||(g[0]+g[1]).toLowerCase().indexOf(f)>-1}).map(function(g){return '<div><dt>'+esc(g[0])+'</dt><dd>'+esc(g[1])+'</dd></div>'}).join('')||'<div><dd>No matching term.</dd></div>'}
-$('#glq').oninput=function(){renderGl(this.value)};renderGl();
-
-/* faq */
-var FQ=[['Where do I start if I do not know what is wrong?','Describe the symptom exactly, then check power and cables. Use the troubleshooting section that best matches what you see.'],['Is it safe to open a computer?','Yes, if you shut down, unplug, ground yourself and follow the safety steps. Never open the power supply.'],['Why change only one thing at a time?','If you change several things, you will not know which one fixed or caused the problem.'],['How do I know if my RAM is the problem?','Beeps, no display and random restarts are common signs. Reseat it, then test one module at a time and run a memory test.'],['My computer is on but the screen is black. What now?','Check the monitor, input and cable, then try the no display steps.'],['Can I clean parts with water or sprays?','No. Use compressed air, a soft brush or a dry lint-free cloth only, with the unit unplugged.'],['When should I ask my instructor?','Any time you are unsure, if you smell burning, see damage, or if the steps are done and the problem remains.'],['Does EduFix replace my lab sessions?','No. It supports what you practice in class and in the lab.']];
-$('#faqbox').innerHTML=FQ.map(function(f){return '<details><summary>'+esc(f[0])+'</summary><p>'+esc(f[1])+'</p></details>'}).join('');
-
-/* search */
-var IDX=[];
-FIX.forEach(function(f){IDX.push({t:f.t,s:'Troubleshooting',k:f.sym+' '+f.steps.map(function(s){return s[0]+' '+s[1]}).join(' '),go:function(){cur=f.id;renderTabs();renderFlow()},a:'fix'})});
-Object.keys(PARTS).forEach(function(k){var p=PARTS[k];IDX.push({t:p.n,s:'Component',k:p.f+' '+p.p,go:function(){showPart(k)},a:'parts'})});
-GL.forEach(function(g){IDX.push({t:g[0],s:'Glossary',k:g[1],go:function(){$('#glq').value=g[0];renderGl(g[0])},a:'glossary'})});
-FQ.forEach(function(f){IDX.push({t:f[0],s:'FAQ',k:f[1],go:function(){},a:'faq'})});
-IDX.push({t:'Safety and ESD precautions',s:'Safety',k:'unplug wrist strap static electrostatic discharge open case',go:function(){},a:'safety'},{t:'Beep codes',s:'Reference',k:'post beep error indicators speaker',go:function(){},a:'beeps'},{t:'Tools and diagnostic software',s:'Reference',k:'screwdriver multimeter compressed air',go:function(){},a:'tools'},{t:'Preventive maintenance',s:'Reference',k:'cleaning dust cable management',go:function(){},a:'maintenance'},{t:'Self-check quiz',s:'Practice',k:'practice test',go:function(){},a:'quiz'},{t:'Checklists',s:'Reference',k:'printable quick reference',go:function(){},a:'checklists'});
-var q=$('#q'),rs=$('#results');
-q.oninput=function(){
-  var v=q.value.trim().toLowerCase();if(v.length<2){rs.hidden=true;return}
-  var hits=IDX.filter(function(i){return (i.t+' '+i.k).toLowerCase().indexOf(v)>-1}).slice(0,8);
-  rs.hidden=false;
-  rs.innerHTML=hits.length?hits.map(function(h,n){return '<button data-n="'+n+'"><b>'+esc(h.t)+'</b><small>'+esc(h.s)+'</small></button>'}).join(''):'<div style="padding:12px">No results. Try a symptom like “no display” or a part like “RAM”.</div>';
-  $$('button',rs).forEach(function(b){b.onclick=function(){var h=hits[+b.dataset.n];h.go();rs.hidden=true;q.value='';window.__show(h.a)}});
+const BEEP={AMI:[['1 short','Memory refresh failure','Reseat the RAM sticks.',['s']],['2 short','Memory parity error','Reseat or replace the RAM.',['s','s']],['3 short','First 64 KB of RAM failed','Replace the RAM stick.',['s','s','s']],['5 short','Processor error','Check CPU seating and cooler.',['s','s','s','s','s']],['8 short','Display memory fault','Reseat or replace the graphics card.',['s','s','s','s','s','s','s','s']],['1 long, 3 short','RAM failure','Test sticks one at a time.',['l','s','s','s']],['1 long, 8 short','Video test failure','Check the video card and cable.',['l','s','s','s','s','s','s','s','s']]],
+ Award:[['1 short','POST passed. All is well.','No action needed.',['s']],['1 long, 2 short','Video error','Reseat the graphics card and check the cable.',['l','s','s']],['Continuous long','Memory problem','Reseat or replace the RAM.',['l','l','l']],['Repeating high and low','CPU problem or overheating','Check the cooler and CPU seating.',['l','s','l','s']]],
+ Phoenix:[['1-1-2','CPU test failure','Check the CPU seating and cooler.',['s','l','s','l','s','l']],['1-1-3','CMOS read/write failure','Replace the CMOS battery and reset BIOS.',['s','l','s','l','s','s','s']],['1-3-1','RAM refresh failure','Reseat or replace the RAM.',['s','s','s','l','s']]]};
+const FAQ=[['Can I damage my PC by opening it?','Only if you skip the safety steps. Unplug it, ground yourself and handle parts by the edges.'],['How long should a fix take?','Most guides take 5 to 10 minutes to read. The repair itself depends on the fault. Do not rush the safety steps.'],['What if the guide does not fix my problem?','Use the wizard button "Try the next likely cause". If the problem remains, ask your instructor or technician.'],['Do I need an account?','No. Progress stays in your browser. An optional participant code is only used if your researcher gives you one.'],['Can I use EduFix on my phone?','Yes. The pages work from small phone screens up to laptops.'],['Is EduFix a tutor?','No. It is a supplementary guide that works alongside your class lessons.']];
+const CHECK=[['Before opening a case',['PC shut down','Power cable out of wall','Power button held for 5 seconds','Wrist strap clipped to bare metal','Workspace clear, screws in a tray']],['No-power quick check',['Different wall socket','Different power cable','PSU switch on','24-pin plug seated','CPU power plug seated']],['After the repair',['All cables reconnected','No loose screws inside','Case panel closed','PC boots to desktop','Tools returned to the lab']]];
+/* wizard tree */
+const W={
+ start:{q:'What is the main symptom?',why:'Different symptoms point to different parts of the PC.',o:[['Nothing happens when I press power','power'],['Fans spin but the screen is black','disp'],['It beeps on startup','beep'],['It freezes or restarts','freeze'],['Storage or "no boot device" error','stor'],['It gets very hot or loud','hot'],['A keyboard, mouse or USB device fails','per']]},
+ power:{q:'Do any lights or fans come on at all?',why:'Some life means the power supply works. No life points to the wall, cable or PSU.',o:[['No lights, no fans','r_power'],['Lights come on but it will not start','r_cable']]},
+ disp:{q:'Does the monitor show "No signal" or stay fully dark?',why:'"No signal" tells us the monitor is on but gets nothing.',o:[['"No signal" message','r_disp'],['Fully dark, no light','r_mon']]},
+ beep:{q:'How many beeps, and are they short or long?',why:'Each beep pattern maps to a faulty subsystem.',o:[['Long beeps or a repeating pattern','r_ram'],['Short beeps in a group','r_beep']]},
+ freeze:{q:'When does it freeze?',why:'Freezing only under load usually means heat. Random freezing often means RAM or storage.',o:[['After it has been on for a while','r_hot'],['Randomly, even when idle','r_ram'],['During file copying or opening programs','r_stor']]},
+ stor:{q:'Do you hear clicking, or does the BIOS fail to list the drive?',why:'Both are signs the drive or its cable is failing.',o:[['Clicking or the drive is not listed','r_stor'],['Drive is listed but Windows will not load','r_os']]},
+ hot:{q:'Is the case hot to touch, or are the fans just loud?',why:'Loud fans are a symptom of the system fighting heat.',o:[['Hot and loud','r_hot'],['Only loud, rattling noise','r_fan']]},
+ per:{q:'Does the device fail on every USB port?',why:'If it fails everywhere, the device or driver is the problem. One port means a bad port.',o:[['Fails on every port','r_per'],['Works on some ports','r_port']]},
+ r_power:{r:'Power supply, cable or switch fault',topic:'power',case:true,steps:['Try a different wall socket and power cable','Check the PSU switch is on','Reseat the 24-pin and CPU power plugs','Swap in a known good PSU']},
+ r_cable:{r:'Loose power plug or front-panel wire',topic:'power',case:true,steps:['Reseat the 24-pin and CPU plugs','Check the power button wire on the board','Try booting with only one RAM stick']},
+ r_disp:{r:'Wrong input, loose video cable or wrong port',topic:'display',case:false,steps:['Select the correct monitor input','Reseat the video cable at both ends','Plug into the graphics card, not the board','Try another monitor']},
+ r_mon:{r:'Monitor has no power or has failed',topic:'display',case:false,steps:['Check the monitor power cable and button','Try a different outlet','Test with another monitor']},
+ r_ram:{r:'Memory (RAM) not seated or failing',topic:'ram',case:true,steps:['Reseat every RAM stick','Clean the gold contacts with a dry cloth','Test one stick at a time in the first slot']},
+ r_beep:{r:'Hardware fault found by POST',topic:'boot',case:false,steps:['Write down the beep pattern','Look it up in the Beep-Code lookup','Follow the suggested fix for your BIOS maker']},
+ r_hot:{r:'Overheating from dust or a failed fan',topic:'cooling',case:true,steps:['Clear the vents','Blow out dust from fans and heatsink','Check that all fans spin','Renew thermal paste if still hot']},
+ r_stor:{r:'Drive or cable fault',topic:'storage',case:true,steps:['Back up your files if you can','Reseat the data and power cables','Check SMART health','Replace the drive if it fails the check']},
+ r_os:{r:'Boot order or damaged operating system',topic:'boot',case:false,steps:['Check the boot order in BIOS','Remove USB sticks and discs','Run startup repair or reinstall the operating system']},
+ r_fan:{r:'Fan bearing or loose part',topic:'cooling',case:true,steps:['Find which fan makes the noise','Clean the fan blades','Tighten loose screws','Replace the faulty fan']},
+ r_per:{r:'Faulty device or driver',topic:'periph',case:false,steps:['Test the device on another PC','Look for a warning icon in Device Manager','Reinstall the driver','Replace the device']},
+ r_port:{r:'Bad or unpowered USB port',topic:'periph',case:false,steps:['Use a working port at the back of the PC','Avoid unpowered hubs','Check for a loose front-panel cable inside after the safety gate']}
 };
-document.addEventListener('click',function(e){if(!e.target.closest('.search'))rs.hidden=true});
-q.addEventListener('keydown',function(e){if(e.key==='Escape')rs.hidden=true});
-
-/* separate pages: index + one part at a time */
-var PAGES=[['safety','Safety first','Power-down, ESD and opening a unit safely','Part 1'],['parts','Know the parts','Clickable board diagram of each component','Part 2'],['fix','Troubleshoot','Step-by-step fixes for 8 common problems','Part 3'],['beeps','Beep codes','What POST beep patterns mean','Part 4'],['tools','Tools','Hand tools and diagnostic software','Part 5'],['maintenance','Maintenance','Preventive cleaning and care','Part 6'],['videos','Video demos','Demonstration videos','Part 7'],['quiz','Self-check quiz','10 practice questions with explanations','Part 8'],['checklists','Checklists','Tick-off and copyable quick references','Part 9'],['glossary','Glossary','Searchable technical terms','Part 10'],['faq','FAQ','Answers to common questions','Part 11']];
-$('#index').innerHTML=PAGES.map(function(p){return '<a href="#'+p[0]+'"><small>'+p[3]+'</small><b>'+esc(p[1])+'</b><span>'+esc(p[2])+'</span></a>'}).join('');
-$$('section').forEach(function(s){var a=document.createElement('a');a.className='back';a.href='#home';a.textContent='← All topics';s.insertBefore(a,s.firstChild)});
-var links=$$('nav.rail a');
-function show(id){
-  if(!document.getElementById(id)||!(id==='home'||PAGES.some(function(p){return p[0]===id})))id='home';
-  $$('section').forEach(function(s){s.classList.toggle('active',s.id===id)});
-  $('#home').classList.toggle('active',id==='home');
-  links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+id)});
-  try{if(location.hash!=='#'+id)history.replaceState(null,'','#'+id)}catch(e){}
-  window.scrollTo(0,0);
+/* ---------- state ---------- */
+const S={view:'home',topic:null,step:0,qz:null,wiz:{path:['start']},gate:null,beepMaker:'AMI',beepSel:-1,hs:null,diagBack:false};
+const store={get(k,d){try{const v=localStorage.getItem('edufix_'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('edufix_'+k,JSON.stringify(v))}catch(e){}}};
+const mem={viewed:store.get('viewed',[]),scores:store.get('scores',{}),last:store.get('last',null),consent:store.get('consent',false),safe:{}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tip=s=>esc(s).replace(/\{\{(.+?)\}\}/g,(m,k)=>GLOSS[k]?`<span class="tip" tabindex="0" data-def="${esc(GLOSS[k])}">${k}</span>`:k);
+const ico=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
+const NAV=[['home','Home'],['wizard','Wizard'],['topics','Topics'],['diagram','Diagram'],['beeps','Beep codes'],['quiz','Quizzes'],['ref','Reference'],['about','About']];
+function go(v,o={}){Object.assign(S,{view:v},o);render();window.scrollTo(0,0);try{location.hash=v}catch(e){}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){e.preventDefault();const o={};if(b.dataset.topic){o.topic=b.dataset.topic;o.step=0}if(b.dataset.go==='wizard'&&!b.dataset.keep)o.wiz={path:['start']};if(b.dataset.go==='quiz'&&!b.dataset.topic)o.qz=null;if(b.dataset.go==='quiz'&&b.dataset.topic){o.qz={id:b.dataset.topic,i:0,sel:null,score:0,done:false,log:[]}}go(b.dataset.go,o)}});
+/* ---------- views ---------- */
+function nav(){$('#nav').innerHTML=NAV.map(([k,l])=>`<button data-go="${k}" ${(S.view===k||(k==='topics'&&S.view==='topic'))?'aria-current="page"':''}>${l}</button>`).join('')}
+function home(){
+ const last=mem.last&&T.find(t=>t.id===mem.last);
+ return `<div class="stack" style="gap:28px">
+ <section class="hero"><div class="eyebrow">Computer hardware troubleshooting guide</div>
+  <h1>Find the fault.<br>Fix it safely.</h1>
+  <p>Step-by-step repair help for first-year MMSU-CTE students. Pick a symptom, follow the steps, and check that the fix worked.</p>
+  <div class="row"><button class="btn" data-go="wizard">What's wrong with my PC?</button><button class="btn ghost" data-go="topics">Browse topics</button></div>
+  <button class="search" id="heroSearch"><span>Search a symptom, term or beep code</span><kbd>Ctrl K</kbd></button></section>
+ ${last?`<div class="strip"><span>Continue where you left off: <b>${esc(last.t)}</b></span><button class="btn sm" data-go="topic" data-topic="${last.id}">Continue</button></div>`:''}
+ <section class="stack"><div class="row" style="justify-content:space-between"><h2>Topics</h2><span class="pill">${mem.viewed.length} of ${T.length} viewed</span></div>
+  <div class="grid">${T.map(topicCard).join('')}</div></section>
+ <section class="stack"><h2>How EduFix works</h2><div class="how">
+  <div><b>Identify</b><p>Name the symptom and what the PC is doing.</p></div>
+  <div><b>Isolate</b><p>Narrow it down to one part or connection.</p></div>
+  <div><b>Test</b><p>Try the fix with one change at a time.</p></div>
+  <div><b>Verify</b><p>Confirm the PC works, then close the case.</p></div></div></section></div>`}
+function topicCard(t){const done=mem.viewed.includes(t.id);return `<button class="topic-card" data-go="topic" data-topic="${t.id}">${ico(t.ic)}<h3>${t.t}</h3><div class="meta"><span class="pill">${t.min} min</span><span class="pill">${t.diff}</span>${done?'<span class="pill ok">Viewed</span>':''}${t.case?'<span class="pill warn">Opens case</span>':''}</div></button>`}
+function topics(){return `<div class="stack"><div><div class="eyebrow">Guides</div><h2>All topics</h2></div><div class="grid">${T.map(topicCard).join('')}</div></div>`}
+function topic(){
+ const t=T.find(x=>x.id===S.topic);if(!mem.viewed.includes(t.id)){mem.viewed.push(t.id);store.set('viewed',mem.viewed)}mem.last=t.id;store.set('last',t.id);
+ const i=T.indexOf(t),p=T[i-1],n=T[i+1],st=t.steps[S.step],gated=t.case&&st&&/safety gate|After the safety|open/i.test(st[1]+st[0]);
+ return `<div class="crumbs"><button data-go="home">Home</button> / <button data-go="topics">Topics</button> / <span>${esc(t.t)}</span></div>
+ <div class="layout" style="margin-top:16px"><aside class="toc" aria-label="In this guide"><div class="eyebrow">In this guide</div><a href="#" data-jump="s-sym">Symptoms</a><a href="#" data-jump="s-cause">Likely causes</a><a href="#" data-jump="s-steps">Step by step</a><a href="#" data-jump="s-ver">Verify the fix</a><a href="#" data-jump="s-test">Test yourself</a></aside>
+ <article>
+  <div class="row"><span class="pill">${t.min} min read</span><span class="pill">${t.diff}</span>${t.case?'<span class="pill warn">Opens the case</span>':''}</div>
+  <h1 style="margin-top:10px">${esc(t.t)}</h1><p style="margin-top:12px;max-width:60ch;color:var(--muted)">${esc(t.intro)}</p>
+  <section class="sec" id="s-sym"><h2>Symptoms</h2><ul class="plain">${t.sym.map(x=>`<li>${tip(x)}</li>`).join('')}</ul></section>
+  <section class="sec" id="s-cause"><h2>Likely causes</h2><ul class="plain">${t.cause.map(x=>`<li>${tip(x)}</li>`).join('')}</ul></section>
+  <section class="sec" id="s-steps"><h2>Step by step</h2>
+   ${t.case&&!mem.safe[t.id]?`<div class="card" style="border-color:var(--warn)"><b>This guide opens the case.</b><p style="margin:6px 0 12px">Complete the safety checklist first.</p><button class="btn sm" data-gate="${t.id}">Open safety checklist</button></div>`:''}
+   <div class="stepper" ${t.case&&!mem.safe[t.id]?'style="opacity:.55" inert':''}>
+    <div class="head"><b>Step ${S.step+1} of ${t.steps.length}</b><span class="mono" style="color:var(--muted)">${Math.round((S.step+1)/t.steps.length*100)}%</span></div>
+    <div class="progress" role="progressbar" aria-valuenow="${S.step+1}" aria-valuemin="1" aria-valuemax="${t.steps.length}"><div style="width:${(S.step+1)/t.steps.length*100}%"></div></div>
+    <div class="body"><h3>${esc(st[0])}</h3><p>${tip(st[1])}</p><div class="why"><b>Why this works.</b> ${esc(st[2])}</div></div>
+    <div class="foot"><button class="btn ghost sm" id="prevStep" ${S.step===0?'disabled':''}>Back</button><button class="btn sm" id="nextStep" ${S.step===t.steps.length-1?'disabled':''}>Next step</button></div></div>
+   <p class="mono" style="font-size:.8rem;color:var(--muted)">Tip: use the left and right arrow keys to move between steps.</p></section>
+  <section class="sec" id="s-ver"><h2>Verify the fix</h2><div class="card">${esc(t.ver)}</div></section>
+  <section class="sec" id="s-test"><h2>Test yourself</h2><div class="card row" style="justify-content:space-between"><span>${t.quiz.length} practice questions with instant feedback.${mem.scores[t.id]!=null?` Best score: <b>${mem.scores[t.id]}/${t.quiz.length}</b>`:''}</span><button class="btn sm" data-go="quiz" data-topic="${t.id}">Start quiz</button></div></section>
+  <div class="nav2">${p?`<button class="btn ghost sm" data-go="topic" data-topic="${p.id}">Previous: ${esc(p.t)}</button>`:'<span></span>'}${n?`<button class="btn sm" data-go="topic" data-topic="${n.id}">Next: ${esc(n.t)}</button>`:''}</div>
+ </article></div>`}
+function wizard(){
+ const path=S.wiz.path,id=path[path.length-1],n=W[id];
+ if(n.r){const tp=T.find(t=>t.id===n.topic);return `<div class="stack" style="max-width:720px;margin:0 auto">
+  <div class="progress"><div style="width:100%"></div></div><div class="eyebrow">Likely cause</div><h1>${esc(n.r)}</h1>
+  ${n.case?`<div class="card" style="border-color:var(--warn)"><b>You will need to open the case.</b><p style="margin:6px 0 12px">Finish the safety checklist before you start.</p><button class="btn sm" data-gate="wiz">Open safety checklist</button></div>`:''}
+  <div class="card"><h3 style="margin-bottom:12px">Steps to try</h3><ol class="steps">${n.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div>
+  <div class="card"><h3 style="margin-bottom:12px">Check it with the four stages</h3><div class="ivtv">${['Identify','Isolate','Test','Verify'].map((x,i)=>`<label><input type="checkbox" id="iv${i}"> ${x}</label>`).join('')}</div></div>
+  <div class="row"><button class="btn" data-go="topic" data-topic="${tp.id}">Read the full guide</button><button class="btn ghost" id="wizBack">Didn't fix it? Try another answer</button><button class="btn ghost" data-go="wizard">Start over</button></div></div>`}
+ return `<div class="stack" style="max-width:720px;margin:0 auto"><div class="progress"><div style="width:${Math.min(90,path.length*30)}%"></div></div>
+  <div class="eyebrow">Question ${path.length}</div><h1 style="font-size:clamp(1.6rem,4vw,2.3rem)">${esc(n.q)}</h1>
+  <div class="opts">${n.o.map(([l,to])=>`<button class="opt" data-wnext="${to}">${esc(l)}</button>`).join('')}</div>
+  <details><summary>Why am I asked this?</summary><p>${esc(n.why)}</p></details>
+  ${path.length>1?'<div><button class="btn ghost sm" id="wizBack">Back</button></div>':''}</div>`}
+function diagram(){
+ const P=[['cpu','CPU socket','The processor does the thinking. It sits under a heatsink and fan.','Overheating, bent pins, shutdowns','cooling',[200,80,90,90]],
+ ['ram','RAM slots','Hold the memory sticks that the PC uses for running programs.','Beeps, freezing, blue screens','ram',[310,70,40,130]],
+ ['gpu','Graphics card slot','The long slot where a graphics card connects to draw the picture.','No display, artifacts, fan noise','display',[60,200,210,32]],
+ ['pw','24-pin power','The main power plug from the PSU into the board.','No power, instant shutoffs','power',[360,215,40,70]],
+ ['sata','SATA ports','Cable ports for hard drives and SSDs.','Drive not detected, boot errors','storage',[320,300,70,40]],
+ ['m2','M.2 slot','A small slot for a flat solid-state drive.','No boot device, slow starts','storage',[70,130,90,22]],
+ ['bat','CMOS battery','Coin cell that keeps BIOS settings and the clock.','Date resets, boot order resets','boot',[80,280,36,36]],
+ ['io','Rear I/O ports','USB, audio and video ports on the back edge.','Dead USB ports, no video','periph',[20,40,36,110]]];
+ const h=S.hs?P.find(x=>x[0]===S.hs):null;
+ return `<div class="stack"><div><div class="eyebrow">Interactive</div><h2>Motherboard diagram</h2><p style="color:var(--muted)">Tap a part to see what it does and where it tends to fail.</p></div>
+ <div class="diag"><svg class="board" viewBox="0 0 420 360" role="group" aria-label="Motherboard diagram">
+  <rect x="6" y="6" width="408" height="348" rx="6" fill="none" stroke="#9fc4b4" stroke-opacity=".35"/>
+  ${P.map(([id,n,,,,r])=>{const c=id==='bat';return `<g class="hs ${S.hs===id?'on':''}" tabindex="0" role="button" aria-label="${n}" data-hs="${id}">${c?`<circle cx="${r[0]+r[2]/2}" cy="${r[1]+r[3]/2}" r="${r[2]/2}"/>`:`<rect x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" rx="3"/>`}<text x="${r[0]+4}" y="${r[1]+r[3]+13}">${n.split(' ')[0]}</text></g>`}).join('')}
+ </svg>
+ <div class="card" aria-live="polite">${h?`<div class="eyebrow">Selected part</div><h3 style="margin:4px 0 8px">${h[1]}</h3><p>${h[2]}</p><p style="margin-top:10px"><b>Common faults:</b> ${h[3]}</p><p style="margin-top:14px"><button class="btn sm" data-go="topic" data-topic="${h[4]}">Open the related guide</button></p>`:'<p style="color:var(--muted)">No part selected yet. Choose one on the board.</p>'}</div></div></div>`}
+function beeps(){
+ const list=BEEP[S.beepMaker],sel=list[S.beepSel];
+ return `<div class="stack" style="max-width:760px"><div><div class="eyebrow">Lookup</div><h2>Beep-code lookup</h2><p style="color:var(--muted)">Pick the BIOS maker shown on the startup screen or in the motherboard manual.</p></div>
+ <div><label for="maker" class="eyebrow">BIOS maker</label><select id="maker">${Object.keys(BEEP).map(k=>`<option ${k===S.beepMaker?'selected':''}>${k}</option>`).join('')}</select></div>
+ <div class="scroll"><table><thead><tr><th>Pattern</th><th>Sound</th></tr></thead><tbody>${list.map((b,i)=>`<tr><td><button class="btn ${i===S.beepSel?'':'ghost'} sm" data-beep="${i}">${b[0]}</button></td><td><div class="beeps" aria-hidden="true">${b[3].map(x=>`<i class="${x}"></i>`).join('')}</div></td></tr>`).join('')}</tbody></table></div>
+ <div class="card" aria-live="polite">${sel?`<div class="eyebrow">Likely cause</div><h3 style="margin:4px 0 6px">${sel[1]}</h3><p><b>Next action:</b> ${sel[2]}</p>`:'<p style="color:var(--muted)">Select a pattern to see the cause and next action.</p>'}</div>
+ <p style="font-size:.88rem;color:var(--muted)">Patterns differ between models. Check your motherboard manual if the result does not fit.</p></div>`}
+function quiz(){
+ const q=S.qz;
+ if(!q)return `<div class="stack"><div><div class="eyebrow">Practice</div><h2>Practice quizzes</h2></div><div class="grid">${T.map(t=>`<button class="topic-card" data-go="quiz" data-topic="${t.id}">${ico(t.ic)}<h3>${t.t}</h3><div class="meta"><span class="pill">${t.quiz.length} questions</span>${mem.scores[t.id]!=null?`<span class="pill ok">Best ${mem.scores[t.id]}/${t.quiz.length}</span>`:''}</div></button>`).join('')}</div></div>`;
+ const t=T.find(x=>x.id===q.id);
+ if(q.done)return `<div class="stack" style="max-width:640px;margin:0 auto"><div class="eyebrow">${esc(t.t)}</div><div class="score">${q.score}/${t.quiz.length}</div><p>${q.score===t.quiz.length?'Perfect score.':q.score>=t.quiz.length/2?'Good work. Review the ones you missed.':'Read the guide again and retry.'}</p>
+  <div class="card"><h3 style="margin-bottom:10px">Review answers</h3>${q.log.map((l,i)=>`<details ${l.ok?'':'open'}><summary>${l.ok?'<span class="pill ok">Correct</span>':'<span class="pill bad">Missed</span>'} ${esc(t.quiz[i][0])}</summary><p>Answer: ${esc(t.quiz[i][1][t.quiz[i][2]])}. ${esc(t.quiz[i][3])}</p></details>`).join('')}</div>
+  <div class="row"><button class="btn" data-go="quiz" data-topic="${t.id}">Retry</button><button class="btn ghost" data-go="topic" data-topic="${t.id}">Back to guide</button><button class="btn ghost" data-go="quiz" id="allQuiz">All quizzes</button></div></div>`;
+ const Q=t.quiz[q.i];
+ return `<div class="stack" style="max-width:640px;margin:0 auto"><div class="progress"><div style="width:${q.i/t.quiz.length*100}%"></div></div><div class="eyebrow">${esc(t.t)} · Question ${q.i+1} of ${t.quiz.length}</div><h2>${esc(Q[0])}</h2>
+  <div>${Q[1].map((o,i)=>`<button class="qopt ${q.sel==null?'':i===Q[2]?'right':i===q.sel?'wrong':''}" data-ans="${i}" ${q.sel!=null?'disabled':''}>${esc(o)}</button>`).join('')}</div>
+  ${q.sel!=null?`<div class="card" aria-live="polite"><b>${q.sel===Q[2]?'Correct.':'Not quite.'}</b> ${esc(Q[3])}</div><div><button class="btn" id="qNext">${q.i===t.quiz.length-1?'See score':'Next question'}</button></div>`:''}</div>`}
+function ref(){
+ return `<div class="stack" style="gap:32px"><div><div class="eyebrow">Reference</div><h2>Glossary, FAQ and checklists</h2></div>
+ <section class="stack"><h3>Glossary</h3><label class="eyebrow" for="gs">Filter terms</label><input type="search" id="gs" placeholder="Type to filter"><div id="gl" class="stack" style="gap:0">${glossHtml('')}</div></section>
+ <section><h3 style="margin-bottom:6px">FAQ</h3>${FAQ.map(f=>`<details><summary>${esc(f[0])}</summary><p>${esc(f[1])}</p></details>`).join('')}</section>
+ <section class="stack"><h3>Checklists</h3><div class="grid">${CHECK.map((c,ci)=>`<div class="card"><b>${c[0]}</b><div style="display:grid;gap:6px;margin-top:10px">${c[1].map((x,i)=>`<label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="ck${ci}_${i}" style="margin-top:6px"> ${x}</label>`).join('')}</div></div>`).join('')}</div></section></div>`}
+function glossHtml(f){const k=Object.keys(GLOSS).sort().filter(x=>(x+GLOSS[x]).toLowerCase().includes(f.toLowerCase()));return k.length?k.map(x=>`<div style="border-bottom:1px solid var(--line);padding:10px 0"><b class="mono">${x}</b><p style="color:var(--muted)">${esc(GLOSS[x])}</p></div>`).join(''):'<p style="color:var(--muted)">No terms match that search.</p>'}
+function about(){return `<div class="stack" style="max-width:700px"><div><div class="eyebrow">About</div><h2>About EduFix and your privacy</h2></div>
+ <div class="card"><b>Supplementary resource.</b><p style="margin-top:6px">EduFix supports first-year MMSU-CTE students learning computer hardware troubleshooting. It works alongside your lessons and instructor. It is not an intelligent tutoring system.</p></div>
+ <div class="card"><b>Purpose of the study</b><p style="margin-top:6px">EduFix is evaluated as part of a research study on how a web-based guide helps students troubleshoot computer hardware.</p></div>
+ <div class="card"><b>Data and consent</b><ul class="plain" style="margin-top:8px"><li>Your progress and quiz scores stay in this browser.</li><li>No account, name or email is needed.</li><li>An optional participant code links quiz attempts without personal details.</li><li>You can stop using EduFix at any time.</li></ul>
+ <button class="btn ghost sm" id="resetData" style="margin-top:12px">Clear my saved progress</button></div>
+ <div class="card"><b>Researcher contact</b><p style="margin-top:6px">Add the researcher's name and campus email here before publishing to participants.</p></div></div>`}
+function view(){switch(S.view){case'home':return home();case'topics':return topics();case'topic':return topic();case'wizard':return wizard();case'diagram':return diagram();case'beeps':return beeps();case'quiz':return quiz();case'ref':return ref();case'about':return about()}return `<div class="stack" style="text-align:center;padding:60px 0"><h1>Page not found</h1><p>That page does not exist.</p><div><button class="btn" data-go="home">Back to home</button></div></div>`}
+function render(){nav();try{$('#view').innerHTML=view()}catch(e){$('#view').innerHTML='<div class="card"><b>Something went wrong on this page.</b><p style="margin:8px 0 12px">The rest of EduFix still works.</p><button class="btn sm" data-go="home">Back to home</button></div>'}consent()}
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{const t=e.target.closest('button,a,.hs');if(!t)return;
+ if(t.id==='heroSearch'||t.id==='searchBtn')openPal();
+ if(t.id==='themeBtn'){const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';store.set('theme',r.dataset.theme)}
+ if(t.dataset.jump){e.preventDefault();document.getElementById(t.dataset.jump)?.scrollIntoView({behavior:'smooth'})}
+ if(t.id==='nextStep'){S.step++;render()} if(t.id==='prevStep'){S.step--;render()}
+ if(t.dataset.wnext){S.wiz.path.push(t.dataset.wnext);render();window.scrollTo(0,0)}
+ if(t.id==='wizBack'){S.wiz.path.pop();render()}
+ if(t.dataset.gate)openGate(t.dataset.gate);
+ if(t.dataset.hs||t.closest('.hs')){S.hs=(t.dataset.hs||t.closest('.hs').dataset.hs);render()}
+ if(t.dataset.beep!=null&&t.dataset.beep!==''){S.beepSel=+t.dataset.beep;render()}
+ if(t.dataset.ans!=null&&t.dataset.ans!==''){const q=S.qz,T0=T.find(x=>x.id===q.id).quiz[q.i];q.sel=+t.dataset.ans;const ok=q.sel===T0[2];if(ok)q.score++;q.log[q.i]={ok};render()}
+ if(t.id==='qNext'){const q=S.qz,tt=T.find(x=>x.id===q.id);if(q.i===tt.quiz.length-1){q.done=true;if((mem.scores[q.id]??-1)<q.score){mem.scores[q.id]=q.score;store.set('scores',mem.scores)}}else{q.i++;q.sel=null}render()}
+ if(t.id==='allQuiz'){S.qz=null;render()}
+ if(t.id==='resetData'){mem.viewed=[];mem.scores={};mem.last=null;['viewed','scores','last'].forEach(k=>store.set(k,k==='scores'?{}:k==='last'?null:[]));t.textContent='Progress cleared'}
+ if(t.id==='acceptConsent'){mem.consent=true;store.set('consent',true);consent()}
+ if(t.dataset.palgo){$('#pal').close();const[v,a]=t.dataset.palgo.split(':');if(v==='topic')go('topic',{topic:a,step:0});else if(v==='beeps'){const[m,i]=a.split('|');go('beeps',{beepMaker:m,beepSel:+i})}else go(v)}
+});
+document.addEventListener('click',e=>{const b=e.target.closest('#nav button, .logo');if(b&&S.view!=='quiz')S.qz=null});
+document.addEventListener('input',e=>{if(e.target.id==='gs')$('#gl').innerHTML=glossHtml(e.target.value);if(e.target.id==='palIn')palFill(e.target.value)});
+document.addEventListener('change',e=>{if(e.target.id==='maker'){S.beepMaker=e.target.value;S.beepSel=-1;render()}});
+document.addEventListener('keydown',e=>{
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openPal()}
+ if(S.view==='topic'&&!$('dialog[open]')&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){const t=T.find(x=>x.id===S.topic);if(e.key==='ArrowRight'&&S.step<t.steps.length-1){S.step++;render()}if(e.key==='ArrowLeft'&&S.step>0){S.step--;render()}}
+ if((e.key==='Enter'||e.key===' ')&&e.target.classList?.contains('hs')){e.preventDefault();S.hs=e.target.dataset.hs;render()}
+});
+/* safety gate */
+function openGate(ctx){
+ const items=['Power is off and the cable is out of the wall','I have held the power button for 5 seconds','I am grounded with a wrist strap or touching bare metal','My workspace is clear and dry','I know where my screws will go'];
+ let d=$('#gate');if(!d){d=document.createElement('dialog');d.id='gate';document.body.appendChild(d)}
+ d.innerHTML=`<div style="padding:20px;display:grid;gap:14px"><div class="eyebrow">Safety gate</div><h2>Before you open the case</h2><div style="display:grid;gap:8px">${items.map((x,i)=>`<label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" class="gk" id="gk${i}" style="margin-top:6px"> ${x}</label>`).join('')}</div><div class="row"><button class="btn" id="gc" disabled>Continue</button><button class="btn ghost" id="gx">Cancel</button></div></div>`;
+ d.showModal();
+ d.addEventListener('change',()=>{$('#gc').disabled=![...d.querySelectorAll('.gk')].every(x=>x.checked)});
+ $('#gx').onclick=()=>d.close();
+ $('#gc').onclick=()=>{if(ctx!=='wiz')mem.safe[ctx]=true;d.close();if(ctx==='wiz'){const p=S.wiz.path,tp=W[p[p.length-1]].topic;mem.safe[tp]=true;go('topic',{topic:tp,step:0})}else render()};
 }
-window.__show=show;
-document.addEventListener('click',function(e){var a=e.target.closest('a[href^="#"]');if(!a||a.classList.contains('brand')&&false)return;var id=a.getAttribute('href').slice(1);if(id==='top')id='home';e.preventDefault();show(id)});
-window.addEventListener('hashchange',function(){show(location.hash.slice(1)||'home')});
-show(location.hash.slice(1)||'home');
-})();
+/* search palette */
+function palFill(q){
+ q=q.trim().toLowerCase();const items=[];
+ T.forEach(t=>items.push({k:'Topic',l:t.t,go:'topic:'+t.id,s:t.t+' '+t.sym.join(' ')}));
+ Object.keys(GLOSS).forEach(g=>items.push({k:'Glossary',l:g,go:'ref:',s:g+' '+GLOSS[g]}));
+ FAQ.forEach(f=>items.push({k:'FAQ',l:f[0],go:'ref:',s:f[0]+' '+f[1]}));
+ Object.entries(BEEP).forEach(([m,a])=>a.forEach((b,i)=>items.push({k:'Beep',l:m+' · '+b[0]+' · '+b[1],go:'beeps:'+m+'|'+i,s:m+' '+b[0]+' '+b[1]})));
+ const r=(q?items.filter(x=>x.s.toLowerCase().includes(q)):items.filter(x=>x.k==='Topic')).slice(0,12);
+ $('#palList').innerHTML=r.length?r.map(x=>`<button data-palgo="${esc(x.go)}">${esc(x.l)}<span>${x.k}</span></button>`).join(''):'<p style="padding:16px;color:var(--muted)">No results. Try a symptom such as "no power" or a part such as "RAM".</p>';
+}
+function openPal(){const d=$('#pal');if(!d.open)d.showModal();$('#palIn').value='';palFill('');$('#palIn').focus()}
+$('#pal').addEventListener('click',e=>{if(e.target.id==='pal')e.target.close()});
+function consent(){$('#consentHost').innerHTML=mem.consent?'':`<div class="consent" role="dialog" aria-label="Privacy notice"><span>EduFix saves your progress in this browser only and collects no personal details. See <a href="#" data-go="about">the full notice</a>.</span><div><button class="btn sm" id="acceptConsent">I understand</button></div></div>`}
+/* boot */
+try{const th=store.get('theme',null);if(th)document.documentElement.dataset.theme=th}catch(e){}
+const h0=location.hash.slice(1);if(NAV.some(n=>n[0]===h0))S.view=h0;
+render();
 </script>
 
 </body></html>
